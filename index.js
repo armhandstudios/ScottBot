@@ -20,23 +20,26 @@ const bot = new Discord.Client({});
 //Instantiate command relevant variables below
 //
 
-//Gaslight vars
-var gaslit = null;
-var glTimeout = null;
+//All this is being obsoleted. Need to find a way to create config file for each server for each new feature added.
+//Saving code to make it easier to reintroduce features
+
+//Gaslight vars 
+//var gaslit = null;
+//var glTimeout = null;
 
 //Secret Santa vars
-var isSSactive = false;
-var SSDesc = "";
-var SSPlayerList = [];
-var SSTargetList = [];
-var SSGiftList = [];
+//var isSSactive = false;
+//var SSDesc = "";
+//var SSPlayerList = [];
+//var SSTargetList = [];
+//var SSGiftList = [];
 
 
 //troint stuff
-var oldHours = 0;
-var playersList = []
-var currentAnswer = ""
-var questionsList = [];
+//var oldHours = 0;
+//var playersList = []
+//var currentAnswer = ""
+//var questionsList = [];
 
 class CharacterSheet
 {
@@ -44,26 +47,12 @@ class CharacterSheet
     {
         this.name = username
         this.health = 10;
-        //if(username == "The Resistance")
-        //{this.health = 15;}
-        if(username == "pringle")
-        {this.health = 999;}
-        if(username == "Fenix")
-        {this.health = 8;}
-        //if(username == "energyman2289")
-        //{this.health = 7;}
-        if(username == "Drank")
-        {this.health = 6;}
-        //if(username == "ReyaktheHunter")
-        //{this.health = 9;}
-        if(username == "pr8nkster")
-        {this.health == 9;}
-        if(username == "AuricDullahan")
-        {this.health == 9;}
         this.attack = 1;
         this.attackBonus = 0;
         this.inventory = []
     }
+
+    //will need a way to serialize this object
 
     getHealth()
     {
@@ -167,12 +156,13 @@ bot.on("ready", async () =>
     console.log(`${bot.user.username} is online!`);
     bot.user.setActivity("The troints will matter");
 
-    var membersWithRole = bot.guilds.get("263039543048011778").members.filter(member => { return member.roles.find("name", "Trontestant")}).map(member =>
-        {
-            console.log(`Adding ${member.user.username}`);
-            playersList.push(new CharacterSheet(member.user.username));
-            console.log(playersList);
-        });
+    //need to generalize this action beyond just my server. Additionally, it should save this if it goes offline, rather than initialize it every startup.
+    //var membersWithRole = bot.guilds.get("263039543048011778").members.filter(member => { return member.roles.find("name", "Trontestant")}).map(member =>
+    //    {
+    //        console.log(`Adding ${member.user.username}`);
+    //        playersList.push(new CharacterSheet(member.user.username));
+    //        console.log(playersList);
+    //    });
 });
 
 
@@ -189,27 +179,29 @@ bot.on("guildMemberRemove", member => {
 
 bot.on("presenceUpdate", (oldMember, newMember) =>
 {
-    var h = new Date().getHours();
-    if(h != oldHours && h >= 12 && h < 22)
-        {
-            oldHours = h;
-            if(Math.random() < .3)
-            {
-                if(questionsList.length > 0)
-                {
-                    var curQuestion = Math.floor(Math.random() * questionsList.length);
-                    console.log(questionsList[curQuestion][0]);
-                    console.log(questionsList[curQuestion][1]);
-                    bot.guilds.get("263039543048011778").channels.get("697672130510192711").send(`An airtrop has appeared: ${questionsList[curQuestion][0]}`);
-                    currentAnswer = questionsList[curQuestion][1];
-                    questionsList.splice(curQuestion, 1);
-                }
-            }
-        }
+    //this is a hacky way to check a random chance every so often. it assumes someone in the server will change presence at least once an hour.
+    //that wakes this command up and it will check if its a new hour and a valid hour and will run the check
+    //var h = new Date().getHours();
+    //if(h != oldHours && h >= 12 && h < 22)
+    //    {
+    //        oldHours = h;
+    //        if(Math.random() < .3)
+    //        {
+    //            if(questionsList.length > 0)
+    //            {
+    //                var curQuestion = Math.floor(Math.random() * questionsList.length);
+    //                console.log(questionsList[curQuestion][0]);
+    //                console.log(questionsList[curQuestion][1]);
+    //               bot.guilds.get("263039543048011778").channels.get("697672130510192711").send(`An airtrop has appeared: ${questionsList[curQuestion][0]}`);
+    //                currentAnswer = questionsList[curQuestion][1];
+    //                questionsList.splice(curQuestion, 1);
+    //            }
+    //        }
+    //   }
 
 })
 
-//when the bot gets a message
+//when the bot gets a message notification
 bot.on("message", async message => 
 {
     //don't respond to bots
@@ -231,188 +223,190 @@ bot.on("message", async message =>
     //////////////////////
     if(message.channel.type === "dm")
     {
-        if(cmd == "addq")
-        {
-            if(!messageArray.includes("|"))
-            {
-                message.channel.send("Invalid format");
-                return;
-            }
-            var newQuestion = message.content.slice(5).split(" | ");
-            console.log(`Adding ${newQuestion[0]}, ${newQuestion[1]}.`)
-            questionsList.push(newQuestion);
-            console.log(questionsList);
-        }
+        //Need to generalize this process for multiple servers. May move it out of DMs and into a specific channel, bu i think dms is good
+        //if(cmd == "addq")
+        //{
+        //    if(!messageArray.includes("|"))
+        //    {
+        //        message.channel.send("Invalid format");
+        //        return;
+        //    }
+        //   var newQuestion = message.content.slice(5).split(" | ");
+        //   console.log(`Adding ${newQuestion[0]}, ${newQuestion[1]}.`)
+        //    questionsList.push(newQuestion);
+        //    console.log(questionsList);
+        //}
 
 
-        if(cmd == "listq")
-        {
-            message.channel.send(`List of Questions: ${questionsList}`);
-        }
+        //if(cmd == "listq")
+        //{
+        //    message.channel.send(`List of Questions: ${questionsList}`);
+        //}
 
-        if(cmd == "setwp")
-        {
-            console.log(getCharSheetByName(playersList, message.content.slice(6)));
-            getCharSheetByName(playersList, message.content.slice(6)).attackBonus = 3;
+        //if(cmd == "setwp")
+        //{
+        //    console.log(getCharSheetByName(playersList, message.content.slice(6)));
+        //    getCharSheetByName(playersList, message.content.slice(6)).attackBonus = 3;
             
-        }
+        //}
 
-        if(cmd == "setwp2")
-        {
-            console.log(getCharSheetByName(playersList, message.content.slice(7)));
-            getCharSheetByName(playersList, message.content.slice(7)).attackBonus = 2;
+        //if(cmd == "setwp2")
+        //{
+        //    console.log(getCharSheetByName(playersList, message.content.slice(7)));
+        //    getCharSheetByName(playersList, message.content.slice(7)).attackBonus = 2;
             
-        }
+        //}
 
-        if(cmd == "setwp1")
-        {
-            console.log(getCharSheetByName(playersList, message.content.slice(7)));
-            getCharSheetByName(playersList, message.content.slice(7)).attackBonus = 1;
+        //if(cmd == "setwp1")
+        //{
+        //    console.log(getCharSheetByName(playersList, message.content.slice(7)));
+        //    getCharSheetByName(playersList, message.content.slice(7)).attackBonus = 1;
             
-        }
+        //}
 
-        if(cmd == "sethp")
-        {
-            console.log(getCharSheetByName(playersList, message.content.slice(9)));
-            console.log(messageArray[1]);
-            getCharSheetByName(playersList, message.content.slice(9)).health = parseInt(messageArray[1]);
-            console.log(getCharSheetByName(playersList, message.content.slice(9)).health = parseInt(messageArray[1]));
-        }
+        //if(cmd == "sethp")
+        //{
+        //    console.log(getCharSheetByName(playersList, message.content.slice(9)));
+        //    console.log(messageArray[1]);
+        //    getCharSheetByName(playersList, message.content.slice(9)).health = parseInt(messageArray[1]);
+        //    console.log(getCharSheetByName(playersList, message.content.slice(9)).health = parseInt(messageArray[1]));
+        //}
 
-        if(cmd == "forceq")
-        {
-            if(questionsList.length > 0)
-                {
-                    var curQuestion = Math.floor(Math.random() * questionsList.length);
-                    console.log(questionsList[curQuestion][0]);
-                    console.log(questionsList[curQuestion][1]);
-                    bot.guilds.get("263039543048011778").channels.get("697672130510192711").send(`An airtrop has appeared: ${questionsList[curQuestion][0]}`);
-                    currentAnswer = questionsList[curQuestion][1];
-                    questionsList.splice(curQuestion, 1);
-                }
-        }
+        //if(cmd == "forceq")
+        //{
+        //    if(questionsList.length > 0)
+        //        {
+        //            var curQuestion = Math.floor(Math.random() * questionsList.length);
+        //            console.log(questionsList[curQuestion][0]);
+        //            console.log(questionsList[curQuestion][1]);
+        //            bot.guilds.get("263039543048011778").channels.get("697672130510192711").send(`An airtrop has appeared: ${questionsList[curQuestion][0]}`);
+        //            currentAnswer = questionsList[curQuestion][1];
+        //            questionsList.splice(curQuestion, 1);
+        //        }
+        //}
 
         //rvv The Resistance | Message
-        if(cmd == "rvv")
-        {
-            console.log("Start revive");
-            var trontestantRole = bot.guilds.get("263039543048011778").roles.get("701974929804886056");
-            if(!messageArray.includes("|"))
-            {
-                message.channel.send("Invalid format");
-                return;
-            }
-            var revUsername = message.content.slice(4).split(" | ")[0];
-            var revMsg = message.content.slice(4).split(" | ")[1];
-            var revCs = getCharSheetByName(revUsername);
-            if(revCs == null)
-            {
-                console.log(`Adding ${revUsername}`);
-                revCs = new CharacterSheet(revUsername);
-                playersList.push(revCs);
-                console.log(`New pl after rev: ${playersList}`);
-            }
-            revCs.health = 10;
-            bot.guilds.get("263039543048011778").members.map(member =>
-                {
-                    console.log(member.user.username);
-                    if(member.user.username == revUsername)
-                    {
-                        console.log(revUsername);
-                        member.addRole(trontestantRole);
-                        bot.guilds.get("263039543048011778").channels.get("697672130510192711").send(`${revUsername} has been revived: ${revMsg}`);
-                    }
-                });
-        }
+        //if(cmd == "rvv")
+        //{
+        //    console.log("Start revive");
+        //    var trontestantRole = bot.guilds.get("263039543048011778").roles.get("701974929804886056");
+        //    if(!messageArray.includes("|"))
+        //    {
+        //        message.channel.send("Invalid format");
+        //        return;
+        //    }
+        //    var revUsername = message.content.slice(4).split(" | ")[0];
+        //    var revMsg = message.content.slice(4).split(" | ")[1];
+        //    var revCs = getCharSheetByName(revUsername);
+        //    if(revCs == null)
+        //    {
+        //        console.log(`Adding ${revUsername}`);
+        //        revCs = new CharacterSheet(revUsername);
+        //        playersList.push(revCs);
+        //        console.log(`New pl after rev: ${playersList}`);
+        //    }
+        //    revCs.health = 10;
+        //    bot.guilds.get("263039543048011778").members.map(member =>
+        //        {
+        //            console.log(member.user.username);
+        //            if(member.user.username == revUsername)
+        //            {
+        //                console.log(revUsername);
+        //                member.addRole(trontestantRole);
+        //                bot.guilds.get("263039543048011778").channels.get("697672130510192711").send(`${revUsername} has been revived: ${revMsg}`);
+        //            }
+        //        });
+        //}
 
         //secretSanta
-        if(cmd === `${tradPrefix}secretSanta`)
-        {
+        //commenting out secret santa because it shares variables across guilds. need to isolate that
+        //if(cmd === `${tradPrefix}secretSanta`)
+        //{
             //secretSanta submit
-            if(args[0] === "submit")
-            {
+        //    if(args[0] === "submit")
+        //    {
                 //make sure the player is in secret santa
-                if(!message.author in SSPlayerList)
-                {
-                    message.channel.send("You are not registered for the current Secret Santa session.");
-                    return;
-                }
+        //        if(!message.author in SSPlayerList)
+        //        {
+        //            message.channel.send("You are not registered for the current Secret Santa session.");
+        //            return;
+        //        }
                 //make sure there is a message
-                if(args.length === 1)
-                {
-                    message.channel.send("Please use !secretSanta submit [message that includes the gift code/link].");
-                    return;
-                }
+        //        if(args.length === 1)
+        //        {
+        //            message.channel.send("Please use !secretSanta submit [message that includes the gift code/link].");
+        //            return;
+        //        }
                 //record the message in the appropriate spot of gifts list
-                var PlayerIndex = SSPlayerList.indexOf(message.author);                 //Find the index in playerList of the person who sent this message
-                var TargetIndex = SSPlayerList.indexOf(SSTargetList[PlayerIndex]);      //Find the index in playerList of the target of the person who sent this message
-                SSGiftList[TargetIndex] = args.slice(1).join(" ");
+        //        var PlayerIndex = SSPlayerList.indexOf(message.author);                 //Find the index in playerList of the person who sent this message
+        //        var TargetIndex = SSPlayerList.indexOf(SSTargetList[PlayerIndex]);      //Find the index in playerList of the target of the person who sent this message
+        //        SSGiftList[TargetIndex] = args.slice(1).join(" ");
 
-                message.channel.send(`Your gift has been recieved and will be sent to ${targetPlayerIndex} when this ends.`);
-                return;
-            }
-        }
+        //        message.channel.send(`Your gift has been recieved and will be sent to ${targetPlayerIndex} when this ends.`);
+        //        return;
+        //    }
+        //}
     }
 
 
     ///////////////////////////
     //Put TROINTS commands here
     ///////////////////////////
-    if(message.channel.id == "697672130510192711")
-    {
-        if(currentAnswer != "" && message.content.toLowerCase().includes(currentAnswer.toLowerCase()))
-        {
-            var drop = randomDrop(getCharSheetByName(playersList, message.author.username));
-            message.channel.send(`BING BONG. ${message.author.username} gets a ${drop}!`);
-            console.log(`${message.author.username} gets the drop!`);
-            currentAnswer = "";
-        }
+    //if(message.channel.id == "697672130510192711")
+    //{
+    //    if(currentAnswer != "" && message.content.toLowerCase().includes(currentAnswer.toLowerCase()))
+    //    {
+    //        var drop = randomDrop(getCharSheetByName(playersList, message.author.username));
+    //        message.channel.send(`BING BONG. ${message.author.username} gets a ${drop}!`);
+    //        console.log(`${message.author.username} gets the drop!`);
+    //        currentAnswer = "";
+    //    }
 
-        if(cmd == "!health")
-        {
-            message.channel.send(`You have ${getCharSheetByName(playersList, message.author.username).health} health left.`);
-        }
+    //    if(cmd == "!health")
+    //    {
+    //        message.channel.send(`You have ${getCharSheetByName(playersList, message.author.username).health} health left.`);
+    //    }
 
-        if(cmd == "!attack")
-        {
-            console.log("Trying to attack");
-            var trontestantRole = message.guild.roles.get("701974929804886056");
-            if(message.mentions.members.size > 0 && !message.mentions.everyone)
-            {
-                var victim = message.mentions.members.first();
-                var returnString = `You attempt to attack ${victim.displayName}. `;
-                console.log("Found victim");
-                console.log()
-                if(Math.random() < .55)
-                {
+    //    if(cmd == "!attack")
+    //    {
+    //        console.log("Trying to attack");
+    //        var trontestantRole = message.guild.roles.get("701974929804886056");
+    //        if(message.mentions.members.size > 0 && !message.mentions.everyone)
+    //        {
+    //            var victim = message.mentions.members.first();
+    //            var returnString = `You attempt to attack ${victim.displayName}. `;
+    //            console.log("Found victim");
+    //            console.log()
+    //            if(Math.random() < .55)
+    //            {
                     //hit
-                    console.log(getCharSheetByName(playersList, victim.user.username).name);
-                    getCharSheetByName(playersList, victim.user.username).health -= getCharSheetByName(playersList, message.author.username).getAttackPower();
-                    returnString += `You hit dealing ${getCharSheetByName(playersList, message.author.username).getAttackPower()} damage (${getCharSheetByName(playersList, victim.user.username).health}hp left). `
-                    if(getCharSheetByName(playersList, victim.user.username).health < 1)
-                    {
-                        returnString += "Their soul descends into the darkness...";
-                        victim.removeRole(trontestantRole, "Try again next time on Trivia Troints!");
-                    }
-                }
-                else
-                {
+    //                console.log(getCharSheetByName(playersList, victim.user.username).name);
+    //                getCharSheetByName(playersList, victim.user.username).health -= getCharSheetByName(playersList, message.author.username).getAttackPower();
+    //                returnString += `You hit dealing ${getCharSheetByName(playersList, message.author.username).getAttackPower()} damage (${getCharSheetByName(playersList, victim.user.username).health}hp left). `
+    //                if(getCharSheetByName(playersList, victim.user.username).health < 1)
+    //                {
+    //                    returnString += "Their soul descends into the darkness...";
+    //                    victim.removeRole(trontestantRole, "Try again next time on Trivia Troints!");
+    //                }
+    //            }
+    //            else
+    //            {
                     //miss
-                    console.log(getCharSheetByName(playersList, victim.user.username).name);
-                    getCharSheetByName(playersList, message.author.username).health -= getCharSheetByName(playersList, victim.user.username).getAttackPower();
-                    returnString += `You miss, and get counterattacked taking ${getCharSheetByName(playersList, victim.user.username).getAttackPower()} damage (${getCharSheetByName(playersList, message.author.username).health}hp left). `
-                    if(getCharSheetByName(playersList, message.author.username).health < 1)
-                    {
-                        returnString += "Your soul descends into the darkness...";
-                        message.member.removeRole(trontestantRole, "Try again next time on Trivia Troints!");
-                    }
-                }
-                message.channel.send(returnString);
-            }
-        }
+    //                console.log(getCharSheetByName(playersList, victim.user.username).name);
+    //                getCharSheetByName(playersList, message.author.username).health -= getCharSheetByName(playersList, victim.user.username).getAttackPower();
+    //                returnString += `You miss, and get counterattacked taking ${getCharSheetByName(playersList, victim.user.username).getAttackPower()} damage (${getCharSheetByName(playersList, message.author.username).health}hp left). `
+    //                if(getCharSheetByName(playersList, message.author.username).health < 1)
+    //                {
+    //                    returnString += "Your soul descends into the darkness...";
+    //                    message.member.removeRole(trontestantRole, "Try again next time on Trivia Troints!");
+    //                }
+    //            }
+    //            message.channel.send(returnString);
+    //        }
+    //    }
 
-        return;
-    }
+    //    return;
+    //}
 
 
     ///////////////////////////
@@ -427,37 +421,34 @@ bot.on("message", async message =>
             console.log("Fixing smush");
             message.channel.send("Looks like you made a typo. Lemme take care of that for you :)");
             message.delete().catch(O_o=>{console.log("Couldn't delete?")});
-        }
-    }
 
-    if(message.content === "Hey Jeeves, you up?")
-    {
-        message.channel.send("At your service.");
+            //Todo: Send an embed saying "person x says: message but smush is replaced"
+        }
     }
 
     //gaslight passive effect
-    if(message.author === gaslit)
-    {
-        if(message.createdAt > glTimeout)
-        {
-            gaslit = null;
-            glTimeout = null;
-            console.log("Clearing gaslight data: Timeout");
-        }
+    //if(message.author === gaslit)
+    //{
+    //    if(message.createdAt > glTimeout)
+    //    {
+    //        gaslit = null;
+    //        glTimeout = null;
+    //        console.log("Clearing gaslight data: Timeout");
+    //    }
 
-        else
-        {
-            if(Math.random() < 0.5)
-            {
-                message.delete();
-                console.log(`Deleting message ${message.content} from ${message.author}`)
-            }
-            else
-            {
-                console.log("Gaslight check failed");
-            }
-        }
-    }
+    //    else
+    //    {
+    //        if(Math.random() < 0.5)
+    //        {
+    //            message.delete();
+    //            console.log(`Deleting message ${message.content} from ${message.author}`)
+    //        }
+    //        else
+    //        {
+    //            console.log("Gaslight check failed");
+    //        }
+    //    }
+    //}
 
     
 
@@ -479,44 +470,44 @@ bot.on("message", async message =>
 
             for(var i = 0; i < args.length; i++)
             {
-                if(args[i] === "gaslight")
-                {
+                //if(args[i] === "gaslight")
+                //{
                     //gaslight
                     //ideal syntax: hey bot, [can you] gaslight @x [...]
                     //responses: none, agreement (gaslights those people), dissent (gaslights user instead)
 
-                    if(gaslit === null)
-                    {
-                        args = args.slice[i + 1];
-                        var user = message.mentions.users.first()
-                        var sender = message.author;
+                //    if(gaslit === null)
+                //    {
+                //        args = args.slice[i + 1];
+                //        var user = message.mentions.users.first()
+                //        var sender = message.author;
 
-                        var decision = Math.random() * 10;
-                        if(decision === 1)
-                        {
-                            gaslit = sender;
-                            glTimeout = new Date(message.createdAt.getTime() + 60*60000);   //timeout is 60 minutes
-                            message.react('😠');
-                            console.log(`Gaslighting ${gaslit.username}`);
-                            break;
-                        }
-                        if(decision <= 5)
-                        {
-                            gaslit = user;
-                            glTimeout = new Date(message.createdAt.getTime() + 60*60000);   //timeout is 60 minutes
-                            message.react('👌');
-                            console.log(`Gaslighting ${gaslit.username}`);
-                            break;
-                        }
-                        console.log(`Gaslighting no one`);
-                        break;
-                    }
-                    else
-                    {
-                        console.log("Someone is already gaslit");
-                    }
+                //        var decision = Math.random() * 10;
+                //        if(decision === 1)
+                //        {
+                //            gaslit = sender;
+                //            glTimeout = new Date(message.createdAt.getTime() + 60*60000);   //timeout is 60 minutes
+                //            message.react('😠');
+                //            console.log(`Gaslighting ${gaslit.username}`);
+                //            break;
+                //        }
+                //        if(decision <= 5)
+                //        {
+                //            gaslit = user;
+                //            glTimeout = new Date(message.createdAt.getTime() + 60*60000);   //timeout is 60 minutes
+                //            message.react('👌');
+                //            console.log(`Gaslighting ${gaslit.username}`);
+                //            break;
+                //        }
+                //        console.log(`Gaslighting no one`);
+                //        break;
+                //    }
+                //    else
+                //    {
+                //        console.log("Someone is already gaslit");
+                //    }
 
-                }
+                //}
             }
         }
     }
@@ -616,118 +607,118 @@ bot.on("message", async message =>
     
     //TODO: Permissionlock commands
 
-    if(cmd ===`${tradPrefix}secretSanta`)
-    {
+    //if(cmd ===`${tradPrefix}secretSanta`)
+    //{
         //secretSanta start
-        if(args[0] === "start")
-        {
+    //    if(args[0] === "start")
+    //    {
             //check to see if there is already a secret santa going on
-            if(isSSactive)
-            {
-                console.log("Unable to start Secret Santa, one already exists.");
-                message.channel.send("Please end current game of Secret Santa before starting a new one.");
-                return;
-            }
+    //        if(isSSactive)
+    //        {
+    //            console.log("Unable to start Secret Santa, one already exists.");
+    //            message.channel.send("Please end current game of Secret Santa before starting a new one.");
+    //            return;
+    //        }
 
             //no secret santa is currently ongoing, so we start a new one
-            isSSactive = true;
-            SSPlayerList = [];
-            SSTargetList = [];
-            SSGiftList = [];
+    //        isSSactive = true;
+    //        SSPlayerList = [];
+    //        SSTargetList = [];
+    //        SSGiftList = [];
 
             //fill in description if applicable, or give it default value
-            SSDesc = "No description given."
-            if(args.length > 1)
-            {
-                SSDesc = args.slice(1).join(" ");
-            }
+    //        SSDesc = "No description given."
+    //        if(args.length > 1)
+    //        {
+    //            SSDesc = args.slice(1).join(" ");
+    //        }
 
-            console.log(`Starting secret santa: ${SSDesc}`);
-            return;
-        }
+    //        console.log(`Starting secret santa: ${SSDesc}`);
+    //        return;
+    //    }
 
         //secretSanta about
-        if(args[0] === "about")
-        {
+    //    if(args[0] === "about")
+    //    {
             //make sure there is currently a SS active
-            if(!isSSactive)
-            {
-                message.channel.send("No Secret Santa is currently active.");
-                return;
-            }
+    //        if(!isSSactive)
+    //        {
+    //            message.channel.send("No Secret Santa is currently active.");
+    //            return;
+    //        }
 
             //send the Secret Santa Descripiton
-            message.channel.send(SSDesc);
-            return;
-        }
+    //        message.channel.send(SSDesc);
+    //        return;
+    //    }
 
         //secretSanta join
-        if(args[0] === "join")
-        {
+    //    if(args[0] === "join")
+    //    {
             //make sure there is currently a SS active
-            if(!isSSactive)
-            {
-                message.channel.send("No Secret Santa is currently active.");
-                return;
-            }
+    //        if(!isSSactive)
+    //        {
+    //            message.channel.send("No Secret Santa is currently active.");
+    //            return;
+    //        }
 
             //Check if the user is currently in the Secret Santa
-            if(message.author in SSPlayerList)
-            {
-                message.channel.send("You are already registered for this Secret Santa.");
-                return;
-            }
+    //        if(message.author in SSPlayerList)
+    //        {
+    //            message.channel.send("You are already registered for this Secret Santa.");
+    //            return;
+    //        }
 
             //register the user for secret santa
-            SSPlayerList.push(message.author);
-            message.channel.send(`${message.author} has been added to the Secret Santa`);
-            return;
-        }
+    //        SSPlayerList.push(message.author);
+    //        message.channel.send(`${message.author} has been added to the Secret Santa`);
+    //        return;
+    //    }
 
         //secretSanta assign
-        if(args[0] === "assign")
-        {
+    //    if(args[0] === "assign")
+    //    {
             //make sure there is currently a SS active
-            if(!isSSactive)
-            {
-                message.channel.send("No Secret Santa is currently active.");
-                return;
-            }
+    //        if(!isSSactive)
+    //        {
+    //            message.channel.send("No Secret Santa is currently active.");
+    //            return;
+    //        }
 
             //shuffle the members until none of them match the original list (i won't get myself as a secret santa)
-            SSTargetList = SSPlayerList.slice();
-            var currentIndex = SSPlayerList.length, temporaryValue, randomIndex;
+    //        SSTargetList = SSPlayerList.slice();
+    //        var currentIndex = SSPlayerList.length, temporaryValue, randomIndex;
 
             //i tried spacing this while statement out better and it was still unreadable so might as well make it look like good spaghetti
-            while(() => {for(var i = 0; i < SSPlayerList.length; i++){if(SSPlayerList[i] == SSTargetList[i]){return true;}} return false;})
-            {// While there remain elements to shuffle...
-                while (0 !== currentIndex) 
-                {
+    //        while(() => {for(var i = 0; i < SSPlayerList.length; i++){if(SSPlayerList[i] == SSTargetList[i]){return true;}} return false;})
+    //        {// While there remain elements to shuffle...
+    //            while (0 !== currentIndex) 
+    //            {
 
                     // Pick a remaining element...
-                    randomIndex = Math.floor(Math.random() * currentIndex);
-                    currentIndex -= 1;
+    //                randomIndex = Math.floor(Math.random() * currentIndex);
+    //                currentIndex -= 1;
 
                     // And swap it with the current element.
-                    temporaryValue = SSTargetList[currentIndex];
-                    SSTargetList[currentIndex] = SSTargetList[randomIndex];
-                    SSTargetList[randomIndex] = temporaryValue;
-                }
-            }
-            console.log("Successfully shuffled the target list for Secret Santa.");
-            console.log(`Player List: ${SSPlayerList}`);
-            console.log(`Target List: ${SSTargetList}`);
+    //                temporaryValue = SSTargetList[currentIndex];
+    //                SSTargetList[currentIndex] = SSTargetList[randomIndex];
+    //                SSTargetList[randomIndex] = temporaryValue;
+    //            }
+    //        }
+    //        console.log("Successfully shuffled the target list for Secret Santa.");
+    //        console.log(`Player List: ${SSPlayerList}`);
+    //        console.log(`Target List: ${SSTargetList}`);
 
-            SSGiftList = [];
+    //        SSGiftList = [];
             //DM people their target, while instantiating the giftlist
-            for(var i = 0; i < SSPlayerList.length; i++)
-            {
-                SSPlayerList[i].send(`Your Secret Santa target is ${SSTargetList[i].username}. Use !secretSanta submit [message] in this channel to submit your gift.`);
-                SSGiftList.push("");
-            }
+    //        for(var i = 0; i < SSPlayerList.length; i++)
+    //        {
+    //            SSPlayerList[i].send(`Your Secret Santa target is ${SSTargetList[i].username}. Use !secretSanta submit [message] in this channel to submit your gift.`);
+    //            SSGiftList.push("");
+    //        }
 
-            return;
-        }
+    //        return;
+    //    }
 
 
         //secretSanta submit
@@ -735,46 +726,46 @@ bot.on("message", async message =>
 
 
         //secretSanta end
-        if(args[0] === "end")
-        {
+    //    if(args[0] === "end")
+    //    {
             //make sure there is currently a SS active
-            if(!isSSactive)
-            {
-                message.channel.send("No Secret Santa is currently active.");
-                return;
-            }
+    //        if(!isSSactive)
+    //        {
+    //            message.channel.send("No Secret Santa is currently active.");
+    //            return;
+    //        }
 
             //post that the secret santa is over
             //TODO: @ everyone who was in the secret santa
-            message.channel.send("The Secret Santa is over! Please check your DMs from me to see your gift!");
+    //        message.channel.send("The Secret Santa is over! Please check your DMs from me to see your gift!");
 
             //dm everyone their message
-            for(var i = 0; i < SSPlayerList.length; i++)
-            {
-                SSPlayerList[i].send(`Here is your Secret Santa gift!: ${SSGiftList[i]}`);
-            }
+    //        for(var i = 0; i < SSPlayerList.length; i++)
+    //        {
+    //            SSPlayerList[i].send(`Here is your Secret Santa gift!: ${SSGiftList[i]}`);
+    //        }
 
             //clean up variables
-            isSSactive = false;
-        }
+    //        isSSactive = false;
+    //    }
 
         //secretSanta help
-        if(args[0] === "help")
-        {
-            let helpEmbed = new Discord.RichEmbed()
-            .setDescription("Secret Santa Commands:")
-            .setColor("#FF0000")
-            .addField("!secretSanta start [description]", "Starts a Secret Santa event. Permissionlocked")
-            .addField("!secretSanta about", "List the description of the ongoing Secret Santa event")
-            .addField("!secretSanta join", "Add self to the Secret Santa event")
-            .addField("!secretSanta assign", "Use once everyone has signed up. Maps each player to another player and DMs each player their target. Permissionlocked")
-            .addField("!secretSanta submit [message]", "Can only be sent to my DMs, Submits your gift (the message), to me")
-            .addField("!secretSanta end", "Ends the Secret Santa event and DMs each target their gift. Permissionlocked")
-            .addField("!secretSanta help", "Lists available Secret Santa commands");
-            message.channel.send(helpEmbed);
-        }
+    //    if(args[0] === "help")
+    //    {
+    //        let helpEmbed = new Discord.RichEmbed()
+    //        .setDescription("Secret Santa Commands:")
+    //        .setColor("#FF0000")
+    //        .addField("!secretSanta start [description]", "Starts a Secret Santa event. Permissionlocked")
+    //        .addField("!secretSanta about", "List the description of the ongoing Secret Santa event")
+    //        .addField("!secretSanta join", "Add self to the Secret Santa event")
+    //        .addField("!secretSanta assign", "Use once everyone has signed up. Maps each player to another player and DMs each player their target. Permissionlocked")
+    //        .addField("!secretSanta submit [message]", "Can only be sent to my DMs, Submits your gift (the message), to me")
+    //        .addField("!secretSanta end", "Ends the Secret Santa event and DMs each target their gift. Permissionlocked")
+    //        .addField("!secretSanta help", "Lists available Secret Santa commands");
+    //        message.channel.send(helpEmbed);
+    //    }
 
-    }
+    //}
 
 
 
