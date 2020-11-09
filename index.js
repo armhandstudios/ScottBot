@@ -11,6 +11,7 @@
 const token = require("./token.json");
 const botconfig = require("./botconfig.json");
 const Discord = require("discord.js");
+const fs = require("fs");
 
 const bot = new Discord.Client({});
 
@@ -19,6 +20,9 @@ const bot = new Discord.Client({});
 //
 //Instantiate command relevant variables below
 //
+
+
+var guildSettings = []
 
 //All this is being obsoleted. Need to find a way to create config file for each server for each new feature added.
 //Saving code to make it easier to reintroduce features
@@ -41,11 +45,47 @@ const bot = new Discord.Client({});
 //var currentAnswer = ""
 //var questionsList = [];
 
+class GuildSettings
+{
+
+    constructor(_guildId, _botConfigChannel = null, _voteChannels = null)
+    {
+        this.guildId = _guildId;
+        this.botConfigChannel = _botConfigChannel;
+        this.VoteChannels = [];
+        for(var vc in _voteChannels)
+        {
+            this.VoteChannels.push(new this.VoteChannels(vc[0], vc[1]));
+        }
+    }
+
+    voteChannelsContains(channel) 
+    {
+        for(var voteChannel in this.VoteChannels)
+        {
+            if(voteChannel.channel === channel)
+            {
+                return voteChannel;
+            }
+        }
+        return null;
+    }
+}
+
+class VoteChannel
+{
+    constructor(_channel, _emoji)
+    {
+        this.channel = _channel;
+        this.emoji = _emoji;
+    }
+}
+
 class CharacterSheet
 {
     constructor(username)
     {
-        this.name = username
+        this.name = username;
         this.health = 10;
         this.attack = 1;
         this.attackBonus = 0;
@@ -150,11 +190,65 @@ function randomDrop(charSheet)
     }
 }
 
+function inGuildList(guildList, targetGuild)
+{
+    for(guild in guildList)
+    {
+        if(guild.guildId === targetGuild.id)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+function getGuildInGuildList(guildList, targetGuildId)
+{
+    for(guild in guildList)
+    {
+        console.log(guild.guildId + " / " + targetGuildId);
+        if(guild.guildId === targetGuildId)
+        {
+            console.log("HERE");
+            return guild;
+        }
+    }
+    return null;
+}
+
+function exportGuildSettings(guildSettingsList)
+{
+    var guildListJSON = JSON.stringify(guildSettingsList);
+    fs.writeFile("guildSettings.json", guildListJSON);
+}
+
 //occurs when bot hits "ready" state
 bot.on("ready", async () =>
 {
     console.log(`${bot.user.username} is online!`);
     bot.user.setActivity("The troints will matter");
+
+    //TODO: import guildSettings from JSON, then create ones that don't have settings yet
+    var guildSettingsList = fs.readFile("guildSettings.json", (err, data) => {
+        console.log(data);
+    });
+    if(guildSettingsList != null)
+    {
+        for(gs in guildSettingsList)
+        {
+            //may need to make this constructor
+            guildSettings.push(new GuildSettings(gs[0], gs[1], gs[2]));
+        }
+    }
+
+    bot.guilds.map(guild => {
+        if(!inGuildList(guildSettings, guild))
+        {
+            guildSettings.push(new GuildSettings(guild.id));
+        }        
+    });
+
+    exportGuildSettings(guildSettings);
 
     //need to generalize this action beyond just my server. Additionally, it should save this if it goes offline, rather than initialize it every startup.
     //var membersWithRole = bot.guilds.get("263039543048011778").members.filter(member => { return member.roles.find("name", "Trontestant")}).map(member =>
@@ -426,6 +520,17 @@ bot.on("message", async message =>
         }
     }
 
+    //upvote channel passive effect
+    console.log(guildSettings);
+    var voteChannel = getGuildInGuildList(guildSettings, message.guild.id).voteChannelsContains(message.channel)
+    if(voteChannel != null)
+    {
+        if(message.attachments.size > 0)
+        {
+            message.react(voteChannel.emoji);
+        }
+    }
+
     //gaslight passive effect
     //if(message.author === gaslit)
     //{
@@ -512,6 +617,28 @@ bot.on("message", async message =>
         }
     }
 
+
+    /////////////////////////////////
+    //Place CONFIG commands down here
+    /////////////////////////////////
+    if(cmd === `${tradPrefix}setUpvote`)
+    {
+        if(args.length < 1 || args.length > 2)
+        {
+            channel.message.send("I'm sorry old sport, I didn't understand that.");
+        }
+        var emoji;
+        if(args.length == 2)
+        {
+            emoji = args[1];
+        }
+        {
+            emoji = '👍';
+        }
+        var upvoteChannel = new VoteChannel(args[0], emoji);
+        guildSettings.find(message.guild.id).VoteChannels.push(upvoteChannel);
+
+    }
 
 
 
