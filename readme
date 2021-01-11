@@ -1,0 +1,2 @@
+Current commands:
+-!setUpvote #channel [emoji]: ScottBot will automatically react to an attachment posted in the channel with the emoji. Thumbs up emoji is the default
