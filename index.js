@@ -12,6 +12,7 @@ const token = require("./token.json");
 const botconfig = require("./botconfig.json");
 const Discord = require("discord.js");
 const fs = require("fs");
+const { Console } = require("console");
 
 const bot = new Discord.Client({});
 
@@ -48,22 +49,25 @@ var guildSettings = []
 class GuildSettings
 {
 
-    constructor(_guildId, _botConfigChannel = null, _voteChannels = null)
+    constructor(_guildId, _botConfigChannel = null, _voteChannels = [])
     {
+        console.log(`Adding guild w id ${_guildId}`);
         this.guildId = _guildId;
         this.botConfigChannel = _botConfigChannel;
         this.VoteChannels = [];
-        for(var vc in _voteChannels)
+        for(var vc of _voteChannels)
         {
-            this.VoteChannels.push(new this.VoteChannels(vc[0], vc[1]));
+            this.VoteChannels.push(vc);
         }
     }
 
     voteChannelsContains(channel) 
     {
-        for(var voteChannel in this.VoteChannels)
+        console.log(`voteChannelContains searching for ${channel}`);
+        for(var voteChannel of this.VoteChannels)
         {
-            if(voteChannel.channel === channel)
+            console.log(`Testing against ${voteChannel.channel}`);
+            if(voteChannel.channel == channel)
             {
                 return voteChannel;
             }
@@ -192,7 +196,7 @@ function randomDrop(charSheet)
 
 function inGuildList(guildList, targetGuild)
 {
-    for(guild in guildList)
+    for(guild of guildList)
     {
         if(guild.guildId === targetGuild.id)
         {
@@ -204,22 +208,28 @@ function inGuildList(guildList, targetGuild)
 
 function getGuildInGuildList(guildList, targetGuildId)
 {
-    for(guild in guildList)
+    for(guild of guildList)
     {
+        console.log(`In getguildinlist, guild = ${guild}`);
         console.log(guild.guildId + " / " + targetGuildId);
         if(guild.guildId === targetGuildId)
         {
-            console.log("HERE");
+            console.log(`Found guild ${targetGuildId} in guild list`);
             return guild;
         }
     }
     return null;
 }
 
+function sanitizeChannelReference(channelReference)
+{
+    return channelReference.substring(2, channelReference.length - 1);
+}
+
 function exportGuildSettings(guildSettingsList)
 {
     var guildListJSON = JSON.stringify(guildSettingsList);
-    fs.writeFile("guildSettings.json", guildListJSON);
+    fs.writeFile("guildSettings.json", guildListJSON, (err) => {if(err) console.log(`Error writing to guildListJSON: ${err}`)});
 }
 
 //occurs when bot hits "ready" state
@@ -229,21 +239,34 @@ bot.on("ready", async () =>
     bot.user.setActivity("The troints will matter");
 
     //TODO: import guildSettings from JSON, then create ones that don't have settings yet
-    var guildSettingsList = fs.readFile("guildSettings.json", (err, data) => {
-        console.log(data);
-    });
+    var guildSettingsList = null;
+    //fs.readFile("guildSettings.json", "utf-8", function(err, data){if(err) throw err; 
+    //    guildSettingsList = JSON.parse(data); 
+    //    console.log(`Printing guild settings list: ${guildSettingsList}`);});
+    guildSettingsList = JSON.parse(fs.readFileSync("guildSettings.json", "utf-8"));
+    console.log(`Printing guild settings list: ${guildSettingsList}`);
     if(guildSettingsList != null)
     {
-        for(gs in guildSettingsList)
+        for(gs of guildSettingsList)
         {
+            console.log(`Printing gs: ${gs}: ${gs[0]}`);
+            var vcs = [];
+            for(vc of gs.VoteChannels)
+            {
+                console.log(`Building vote channels: Current vc: ${vc}, channel: ${vc.channel}, emoji: ${vc.emoji}`);
+                vcs.push(new VoteChannel(vc.channel, vc.emoji));
+            }
+
             //may need to make this constructor
-            guildSettings.push(new GuildSettings(gs[0], gs[1], gs[2]));
+            console.log(`Pushing existing guild (from json). id: ${gs.guildId}, vcs: ${vcs}`);
+            guildSettings.push(new GuildSettings(gs.guildId, gs.botConfigChannel, vcs));
         }
     }
 
     bot.guilds.map(guild => {
         if(!inGuildList(guildSettings, guild))
         {
+            console.log("Pushing new guild (not json)");
             guildSettings.push(new GuildSettings(guild.id));
         }        
     });
@@ -298,6 +321,7 @@ bot.on("presenceUpdate", (oldMember, newMember) =>
 //when the bot gets a message notification
 bot.on("message", async message => 
 {
+    console.log("----------------------------------------");
     //don't respond to bots
     if(message.author.bot) return;
 
@@ -310,6 +334,7 @@ bot.on("message", async message =>
     //split the message into words
     let cmd = messageArray[0];
     let args = messageArray.slice(1);
+
 
     
     //////////////////////
@@ -508,7 +533,7 @@ bot.on("message", async message =>
     ///////////////////////////
 
     //smultimash
-    for(let word in messageArray) //why the hecc does word give an index and not a word javascript is dumb
+    for(let word in messageArray) //why the hecc does word give an index and not a word javascript is dumb {answered: gotta do for/of, not for/in}
     {
         if(/^sm.*u.*sh/i.test(messageArray[word]))
         {
@@ -521,12 +546,15 @@ bot.on("message", async message =>
     }
 
     //upvote channel passive effect
-    console.log(guildSettings);
-    var voteChannel = getGuildInGuildList(guildSettings, message.guild.id).voteChannelsContains(message.channel)
-    if(voteChannel != null)
+    var msgGuildSettings = getGuildInGuildList(guildSettings, message.guild.id);
+    var voteChannel = msgGuildSettings?.voteChannelsContains(message.channel);
+    console.log(`Vote Channel = ${voteChannel}`);
+    if(voteChannel != null && voteChannel != false)
     {
+        console.log("This is a vote channel. Checking for attachments");
         if(message.attachments.size > 0)
         {
+            console.log("reacting");
             message.react(voteChannel.emoji);
         }
     }
@@ -636,8 +664,9 @@ bot.on("message", async message =>
             emoji = '👍';
         }
         var upvoteChannel = new VoteChannel(args[0], emoji);
-        guildSettings.find(message.guild.id).VoteChannels.push(upvoteChannel);
-
+        console.log(upvoteChannel);
+        guildSettings.find(guildSetting => guildSetting.guildId === message.guild.id).VoteChannels.push(upvoteChannel);
+        exportGuildSettings(guildSettings);
     }
 
 
