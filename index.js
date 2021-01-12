@@ -61,7 +61,7 @@ class GuildSettings
         }
     }
 
-    voteChannelsContains(channel) 
+    voteChannelsContains(channel)
     {
         console.log(`voteChannelContains searching for ${channel}`);
         for(var voteChannel of this.VoteChannels)
@@ -69,10 +69,26 @@ class GuildSettings
             console.log(`Testing against ${voteChannel.channel}`);
             if(voteChannel.channel == channel)
             {
+                console.log(`voteChannelContains did contain. Returning voteChannel`);
                 return voteChannel;
             }
         }
+        console.log(`voteChannelContains did not contain. Returning null`);
         return null;
+    }
+
+    SetVoteChannel(voteChannel)
+    {
+        console.log(`Setting Vote Channel to ${voteChannel}/${voteChannel.emoji}`);
+        console.log(`Conditional evaluates to ${this.voteChannelsContains(voteChannel.channel)}`)
+        if(this.voteChannelsContains(voteChannel.channel) != null)
+        {
+            console.log(`Replacing ${this.voteChannelsContains(voteChannel.channel)}/${this.voteChannelsContains(voteChannel.channel).emoji}`);
+            this.voteChannelsContains(voteChannel.channel).emoji = voteChannel.emoji;
+            console.log(`Vote channel is now ${this.voteChannelsContains(voteChannel.channel)}/${this.voteChannelsContains(voteChannel.channel).emoji}`);
+            return;
+        }
+        this.VoteChannels.push(voteChannel);
     }
 }
 
@@ -80,8 +96,8 @@ class VoteChannel
 {
     constructor(_channel, _emoji)
     {
-        this.channel = _channel;
-        this.emoji = _emoji;
+        this.channel = _channel; //channel's ID
+        this.emoji = _emoji;     //emoji to react with
     }
 }
 
@@ -660,12 +676,13 @@ bot.on("message", async message =>
         {
             emoji = args[1];
         }
+        else
         {
             emoji = '👍';
         }
         var upvoteChannel = new VoteChannel(args[0], emoji);
         console.log(upvoteChannel);
-        guildSettings.find(guildSetting => guildSetting.guildId === message.guild.id).VoteChannels.push(upvoteChannel);
+        guildSettings.find(guildSetting => guildSetting.guildId === message.guild.id).SetVoteChannel(upvoteChannel);
         exportGuildSettings(guildSettings);
     }
 
@@ -696,7 +713,7 @@ bot.on("message", async message =>
         else
         {
             let helpembed = new Discord.RichEmbed()
-            .setDescription("Available Commands:")
+            .setDescription("Available Commands: (This list is incomplete and incorrect)")
             .setColor("#CC7F3A")
             .addField("!help", "Show this message")
             .addField("!addRole [role name] [color]", "Creates a role. The role will have no special permissions, so this will just be for tagging yourself, creating groups, or for fun. Will default to a default color if the provided color is formatted wrong")
@@ -749,7 +766,7 @@ bot.on("message", async message =>
     //Reacts to a command with a thumbs up and thumbs down
     if(cmd === `${tradPrefix}poll`)
     {
-        message.react('👍').then(message.react('👎').then(message.react('🤷')));
+        message.react('👍').then(message.react('🤷').then(message.react('👎')));
     }
 
     //Secret Santa
