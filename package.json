@@ -2,6 +2,9 @@
   "name": "scottbot",
   "version": "1.0.0",
   "description": "Discord Bot",
+  "engines": {
+    "node": "14.15.4"
+  },
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -10,7 +13,6 @@
   "author": "Scott",
   "license": "ISC",
   "dependencies": {
-    "node": "^14.15.4",
     "discord.js": "^11.6.4"
   }
 }
