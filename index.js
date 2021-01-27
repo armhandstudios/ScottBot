@@ -8,7 +8,7 @@
 //make bot accept all friend requests for users privacy reasons
 
 //Bot/Library vars
-const token = require("./token.json");
+//const token = require("./token.json"); //comment this out for commit
 const botconfig = require("./botconfig.json");
 const Discord = require("discord.js");
 const fs = require("fs");
@@ -959,4 +959,4 @@ bot.on("message", async message =>
 
 });
 
-bot.login(process.env.discordToken ?? token.token);
+bot.login(process.env.discordToken /**?? token.token*/); //uncomment this for testing
