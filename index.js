@@ -561,6 +561,21 @@ bot.on("message", async message =>
         }
     }
 
+    //stonks
+    for(let word of messageArray) //why the hecc does word give an index and not a word javascript is dumb {answered: gotta do for/of, not for/in}
+    {
+        if(word.toLowerCase() == "stocks")
+        {
+            message.channel.send("*Stonks");
+            return;
+        }
+        if(word.toLowerCase() == "stock")
+        {
+            message.channel.send("*Stonk");
+            return;
+        }
+    }
+
     //upvote channel passive effect
     var msgGuildSettings = getGuildInGuildList(guildSettings, message.guild.id);
     var voteChannel = msgGuildSettings?.voteChannelsContains(message.channel);
