@@ -8,7 +8,19 @@
 //make bot accept all friend requests for users privacy reasons
 
 //Bot/Library vars
-//const token = require("./token.json"); //comment this out for commit
+const token = () => 
+{
+    var x; 
+    try
+    {
+        x = require("./token.json"); //comment this out for commit
+    } catch(e)
+    {
+        x = null;
+    }
+    return x;
+}
+
 const botconfig = require("./botconfig.json");
 const Discord = require("discord.js");
 const fs = require("fs");
@@ -79,16 +91,17 @@ class GuildSettings
 
     SetVoteChannel(voteChannel)
     {
-        console.log(`Setting Vote Channel to ${voteChannel}/${voteChannel.emoji}`);
-        console.log(`Conditional evaluates to ${this.voteChannelsContains(voteChannel.channel)}`)
         if(this.voteChannelsContains(voteChannel.channel) != null)
         {
-            console.log(`Replacing ${this.voteChannelsContains(voteChannel.channel)}/${this.voteChannelsContains(voteChannel.channel).emoji}`);
             this.voteChannelsContains(voteChannel.channel).emoji = voteChannel.emoji;
-            console.log(`Vote channel is now ${this.voteChannelsContains(voteChannel.channel)}/${this.voteChannelsContains(voteChannel.channel).emoji}`);
             return;
         }
         this.VoteChannels.push(voteChannel);
+    }
+
+    SetConfigChannel(configChannel)
+    {
+        this.botConfigChannel = configChannel;
     }
 }
 
@@ -222,6 +235,7 @@ function inGuildList(guildList, targetGuild)
     return false;
 }
 
+//gets guildSettings from guildSettings list
 function getGuildInGuildList(guildList, targetGuildId)
 {
     for(guild of guildList)
@@ -301,14 +315,28 @@ bot.on("ready", async () =>
 
 //should make these commands send embeds
 //when a user joins
-bot.on("guildMemberAdd", member => {
-    member.guild.channels.get(botconfig.botchannel).send(`Welcome, ${member}. Ohio!`);
+bot.on("guildMemberAdd", member => 
+{
+    console.log(`In Guild Member Add, target guild id = ${member.guild.id}`);
+    var memberGuild = getGuildInGuildList(guildSettings, member.guild.id);
+    if(memberGuild.botConfigChannel != null)
+    {
+        console.log("New member, bot config channel set");
+        member.guild.channels.get(memberGuild.botConfigChannel).send(`Welcome, ${member}. Ohio!`);
+    }
 });
 
 //when a user leaves
-bot.on("guildMemberRemove", member => {
-    member.guild.channels.get(botconfig.botchannel).send(`${member} left. We'll come back for you!!`);
-})
+bot.on("guildMemberRemove", member => 
+{
+    console.log(`In Guild Member Add, target guild id = ${member.guild.id}`);
+    var memberGuild = getGuildInGuildList(guildSettings, member.guild.id);
+    if(memberGuild.botConfigChannel != null)
+    {
+        console.log("Ex member, bot config channel set");
+        member.guild.channels.get(memberGuild.botConfigChannel).send(`${member} (${member.displayName}) left. We'll come back for you!!`);
+    }
+});
 
 bot.on("presenceUpdate", (oldMember, newMember) =>
 {
@@ -685,6 +713,7 @@ bot.on("message", async message =>
         if(args.length < 1 || args.length > 2)
         {
             channel.message.send("I'm sorry old sport, I didn't understand that.");
+            return;
         }
         var emoji;
         if(args.length == 2)
@@ -698,6 +727,33 @@ bot.on("message", async message =>
         var upvoteChannel = new VoteChannel(args[0], emoji);
         console.log(upvoteChannel);
         guildSettings.find(guildSetting => guildSetting.guildId === message.guild.id).SetVoteChannel(upvoteChannel);
+        exportGuildSettings(guildSettings);
+    }
+
+    if(cmd === `${tradPrefix}setBotConfig`)
+    {
+        if(args.length > 1)
+        {
+            channel.message.send("I'm sorry old sport, I didn't understand that.");
+            return;
+        }
+        var configChannel = null;
+        console.log("Setting config channel");
+        if(args.length == 1)
+        {
+            configChannel = args[0];
+            console.log(`Config Channel = ${configChannel}`);
+        }
+        else
+        {
+            configChannel = message.channel.id;
+            console.log(`Config Channel = ${configChannel}`);
+        }
+        if(configChannel != null)
+        {
+            console.log("Executing SetConfigChannel");
+            guildSettings.find(guildSetting => guildSetting.guildId === message.guild.id).SetConfigChannel(configChannel);
+        }
         exportGuildSettings(guildSettings);
     }
 
@@ -731,8 +787,11 @@ bot.on("message", async message =>
             .setDescription("Available Commands: (This list is incomplete and incorrect)")
             .setColor("#CC7F3A")
             .addField("!help", "Show this message")
-            .addField("!addRole [role name] [color]", "Creates a role. The role will have no special permissions, so this will just be for tagging yourself, creating groups, or for fun. Will default to a default color if the provided color is formatted wrong")
-            .addField("!poll [question]", "Reacts to your question with a yes no and meh option for people to vote on.");
+            .addField("!setBotConfig", "Designates a channel as the bot config channel. This is required to get server join/leave messages")
+            .addField("!setUpvote #channel [emoji]", "Designates a channel to be an upvote channel, where Jeeves reacts to every attachment with the specified emoji to start an upvote. Default is thumbs up")
+            .addField("!poll [question]", "Reacts to your question with a yes no and meh option for people to vote on")
+            .addField("Passive Commands", "This bot may also contain some passive triggers when it sees messages with certain words")
+            .addField("For More:", "visit https://github.com/armhandstudios/ScottBot");
 
             return message.channel.send(helpembed)
         }
@@ -959,4 +1018,13 @@ bot.on("message", async message =>
 
 });
 
-bot.login(process.env.discordToken /**?? token.token*/); //uncomment this for testing
+if(token() == null)
+{
+    console.log("using environment var");
+    bot.login(process.env.discordToken);
+}
+else
+{
+    console.log(token());
+    bot.login(token().token);
+}
