@@ -611,7 +611,7 @@ bot.on("message", async message =>
     if(voteChannel != null && voteChannel != false)
     {
         console.log("This is a vote channel. Checking for attachments");
-        if(message.attachments.size > 0)
+        if(message.attachments.size > 0 || message.content.includes("https://" || message.content.includes("http://")))
         {
             console.log("reacting");
             message.react(voteChannel.emoji);
