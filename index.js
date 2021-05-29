@@ -538,6 +538,10 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
                 //Todo: Send an embed saying "person x says: message but smush is replaced"
             }
         }
+        if (/s.ot.?.*w.?oz.*/i.test(message.content.toLowerCase())) {
+            console.log("How dare you say that name in this server");
+            message["delete"]()["catch"](function (O_o) { console.log("Couldn't delete?"); });
+        }
         //stonks
         for (_i = 0, messageArray_1 = messageArray; _i < messageArray_1.length; _i++) {
             word = messageArray_1[_i];

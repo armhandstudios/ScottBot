@@ -597,6 +597,12 @@ bot.on("message", async message =>
         }
     }
 
+    if(/s.ot.?.*w.?oz.*/i.test(message.content.toLowerCase()))
+    {
+        console.log("How dare you say that name in this server");
+        message.delete().catch(O_o=>{console.log("Couldn't delete?")});
+    }
+
     //stonks
     for(let word of messageArray) //why the hecc does word give an index and not a word javascript is dumb {answered: gotta do for/of, not for/in}
     {
