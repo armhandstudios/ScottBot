@@ -919,11 +919,6 @@ bot.on("message", async message =>
     {
         message.react('👍').then(() => message.react('🤷').then(() => message.react('👎')));
     }
-    if(cmd === `${tradPrefix}roll`)
-    {
-        var diceRoll = Math.floor(Math.random() * (20)); 
-        message.reply(diceRoll);
-    }
     //Secret Santa
     //secretSanta start [Description]: Starts the secret santa event. Can only be started by a Mod?.
     //secretSanta about: List the description of the secret santa event.
