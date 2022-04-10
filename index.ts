@@ -64,6 +64,7 @@ class GuildSettings
     guildId: string;
     botConfigChannel: string;
     VoteChannels: Array<VoteChannel>;
+    TriviaChannels: Array<TriviaChannel>;
     constructor(_guildId, _botConfigChannel = null, _voteChannels = [])
     {
         console.log(`Adding guild w id ${_guildId}`);
@@ -78,17 +79,13 @@ class GuildSettings
 
     voteChannelsContains(channel) : VoteChannel
     {
-        console.log(`voteChannelContains searching for ${channel}`);
         for(var voteChannel of this.VoteChannels)
         {
-            console.log(`Testing against ${voteChannel.channel}`);
             if(voteChannel.channel == channel)
             {
-                console.log(`voteChannelContains did contain. Returning voteChannel`);
                 return voteChannel;
             }
         }
-        console.log(`voteChannelContains did not contain. Returning null`);
         return null;
     }
 
@@ -106,6 +103,15 @@ class GuildSettings
     {
         this.botConfigChannel = configChannel;
     }
+
+    SetTriviaChannel(triviaChannel: string)
+    {
+        if(this.TriviaChannels.find(channel => channel.channel === triviaChannel) != null)
+        {
+            return;
+        }
+        this.TriviaChannels.push(new TriviaChannel(triviaChannel));
+    }
 }
 
 class VoteChannel
@@ -117,6 +123,60 @@ class VoteChannel
     {
         this.channel = _channel; //channel's ID
         this.emoji = _emoji;     //emoji to react with
+    }
+}
+
+class TriviaChannel
+{
+    channel: string;
+    scoreboard: Array<Scoresheet>;
+
+    constructor(_channel: string)
+    {
+        this.channel = _channel;
+        this.scoreboard = [];
+    }
+
+    DisplayScoreboard() : string
+    {
+        return "i have not designed a scoreboard yet, go birds!";
+    }
+
+    GetScoresheet(username: string) : Scoresheet
+    {
+        var getSheet = this.scoreboard.find(sheet => sheet.username == username);
+        if(getSheet == null)
+        {
+            getSheet = new Scoresheet(username);
+            this.scoreboard.push(getSheet);
+        }
+        return getSheet;
+
+    }
+}
+
+class Scoresheet
+{
+    username: string;
+    pointList: Array<[string, number]>;
+
+    constructor(_username)
+    {
+        this.username = _username;
+        this.pointList = [];
+    }
+
+    AddPoint(pointName: string, qty: number = 1)
+    {
+        for(var index in this.pointList)
+        {
+            if(this.pointList[index][0] == pointName)
+            {
+                this.pointList[index][1] += qty;
+                return;
+            }
+        }
+        this.pointList.push([pointName, qty]);
     }
 }
 
@@ -523,6 +583,10 @@ bot.on("message", async message =>
     ///////////////////////////
     //Put TROINTS commands here
     ///////////////////////////
+
+
+
+    //Tranctum legacy
     //if(message.channel.id == "697672130510192711")
     //{
     //    if(currentAnswer != "" && message.content.toLowerCase().includes(currentAnswer.toLowerCase()))

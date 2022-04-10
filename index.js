@@ -92,16 +92,12 @@ var GuildSettings = /** @class */ (function () {
         }
     }
     GuildSettings.prototype.voteChannelsContains = function (channel) {
-        console.log("voteChannelContains searching for " + channel);
         for (var _i = 0, _a = this.VoteChannels; _i < _a.length; _i++) {
             var voteChannel = _a[_i];
-            console.log("Testing against " + voteChannel.channel);
             if (voteChannel.channel == channel) {
-                console.log("voteChannelContains did contain. Returning voteChannel");
                 return voteChannel;
             }
         }
-        console.log("voteChannelContains did not contain. Returning null");
         return null;
     };
     GuildSettings.prototype.SetVoteChannel = function (voteChannel) {
@@ -114,6 +110,12 @@ var GuildSettings = /** @class */ (function () {
     GuildSettings.prototype.SetConfigChannel = function (configChannel) {
         this.botConfigChannel = configChannel;
     };
+    GuildSettings.prototype.SetTriviaChannel = function (triviaChannel) {
+        if (this.TriviaChannels.find(function (channel) { return channel.channel === triviaChannel; }) != null) {
+            return;
+        }
+        this.TriviaChannels.push(new TriviaChannel(triviaChannel));
+    };
     return GuildSettings;
 }());
 var VoteChannel = /** @class */ (function () {
@@ -122,6 +124,41 @@ var VoteChannel = /** @class */ (function () {
         this.emoji = _emoji; //emoji to react with
     }
     return VoteChannel;
+}());
+var TriviaChannel = /** @class */ (function () {
+    function TriviaChannel(_channel) {
+        this.channel = _channel;
+        this.scoreboard = [];
+    }
+    TriviaChannel.prototype.DisplayScoreboard = function () {
+        return "i have not designed a scoreboard yet, go birds!";
+    };
+    TriviaChannel.prototype.GetScoresheet = function (username) {
+        var getSheet = this.scoreboard.find(function (sheet) { return sheet.username == username; });
+        if (getSheet == null) {
+            getSheet = new Scoresheet(username);
+            this.scoreboard.push(getSheet);
+        }
+        return getSheet;
+    };
+    return TriviaChannel;
+}());
+var Scoresheet = /** @class */ (function () {
+    function Scoresheet(_username) {
+        this.username = _username;
+        this.pointList = [];
+    }
+    Scoresheet.prototype.AddPoint = function (pointName, qty) {
+        if (qty === void 0) { qty = 1; }
+        for (var index in this.pointList) {
+            if (this.pointList[index][0] == pointName) {
+                this.pointList[index][1] += qty;
+                return;
+            }
+        }
+        this.pointList.push([pointName, qty]);
+    };
+    return Scoresheet;
 }());
 /**
 class CharacterSheet
@@ -473,6 +510,7 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
         ///////////////////////////
         //Put TROINTS commands here
         ///////////////////////////
+        //Tranctum legacy
         //if(message.channel.id == "697672130510192711")
         //{
         //    if(currentAnswer != "" && message.content.toLowerCase().includes(currentAnswer.toLowerCase()))
