@@ -379,7 +379,7 @@ bot.on("presenceUpdate", function (oldMember, newMember) {
 });
 //when the bot gets a message notification
 bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, function () {
-    var tradPrefix, casPrefix, casQualifier, messageArray, cmd, args, word, _i, messageArray_1, word, msgGuildSettings, voteChannel, i, emoji, upvoteChannel, configChannel, helpembed, roleColor;
+    var tradPrefix, casPrefix, casQualifier, messageArray, cmd, args, word, _i, messageArray_1, word, msgGuildSettings, voteChannel, i, emoji, upvoteChannel, configChannel, helpembed, roleColor, diceRoll;
     return __generator(this, function (_a) {
         console.log("----------------------------------------");
         //don't respond to bots
@@ -778,6 +778,10 @@ bot.on("message", function (message) { return __awaiter(void 0, void 0, void 0, 
         //Reacts to a command with a thumbs up and thumbs down
         if (cmd === tradPrefix + "poll") {
             message.react('👍').then(function () { return message.react('🤷').then(function () { return message.react('👎'); }); });
+        }
+        if (cmd === tradPrefix + "roll") {
+            diceRoll = Math.floor(Math.random() * (20));
+            message.reply(diceRoll);
         }
         return [2 /*return*/];
     });
