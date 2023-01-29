@@ -371,10 +371,15 @@ bot.on("message", (message) => __awaiter(void 0, void 0, void 0, function* () {
     console.log(`Vote Channel = ${voteChannel}`);
     if (voteChannel != null) {
         console.log("This is a vote channel. Checking for attachments");
-        if (message.attachments.size > 0 || message.content.includes("https://") || message.content.includes("http://")) {
-            console.log("reacting with " + voteChannel.emoji);
-            message.react(voteChannel.emoji)
-                .catch();
+        try {
+            if (message.attachments.size > 0 || message.content.includes("https://") || message.content.includes("http://")) {
+                console.log("reacting with " + voteChannel.emoji);
+                message.react(voteChannel.emoji)
+                    .catch();
+            }
+        }
+        catch (e) {
+            console.log(e.message);
         }
     }
     //gaslight passive effect
@@ -412,7 +417,7 @@ bot.on("message", (message) => __awaiter(void 0, void 0, void 0, function* () {
             emoji = args[1];
         }
         else {
-            emoji = '??';
+            emoji = '👍';
         }
         var upvoteChannel = new VoteChannel_1.VoteChannel(args[0], emoji);
         console.log(upvoteChannel);

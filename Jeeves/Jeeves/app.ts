@@ -410,10 +410,15 @@ bot.on("message", async message => {
     console.log(`Vote Channel = ${voteChannel}`);
     if (voteChannel != null) {
         console.log("This is a vote channel. Checking for attachments");
-        if (message.attachments.size > 0 || message.content.includes("https://") || message.content.includes("http://")) {
-            console.log("reacting with " + voteChannel.emoji);
-            message.react(voteChannel.emoji)
-                .catch();
+        try {
+            if (message.attachments.size > 0 || message.content.includes("https://") || message.content.includes("http://")) {
+                console.log("reacting with " + voteChannel.emoji);
+                message.react(voteChannel.emoji)
+                    .catch();
+            }
+        }
+        catch (e) {
+            console.log(e.message);
         }
     }
 
@@ -455,7 +460,7 @@ bot.on("message", async message => {
             emoji = args[1];
         }
         else {
-            emoji = '??';
+            emoji = '👍';
         }
         var upvoteChannel = new VoteChannel(args[0], emoji);
         console.log(upvoteChannel);
