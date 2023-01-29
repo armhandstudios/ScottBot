@@ -1,3 +1,6 @@
 *token.json
 *guildSettings.json
 node_modules
+*.vs/
+/Jeeves/Jeeves/bin
+/Jeeves/Jeeves/obj/Debug
