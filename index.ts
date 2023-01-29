@@ -326,6 +326,10 @@ bot.on("message", async message =>
     ///////////////////////////
     //Put TROINTS commands here
     ///////////////////////////
+
+
+
+    //Tranctum legacy
     //if(message.channel.id == "697672130510192711")
     //{
     //    if(currentAnswer != "" && message.content.toLowerCase().includes(currentAnswer.toLowerCase()))
@@ -658,7 +662,6 @@ bot.on("message", async message =>
     {
         message.react('👍').then(() => message.react('🤷').then(() => message.react('👎')));
     }
-
     //Secret Santa
     //secretSanta start [Description]: Starts the secret santa event. Can only be started by a Mod?.
     //secretSanta about: List the description of the secret santa event.
