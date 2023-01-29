@@ -1,7 +1,14 @@
+﻿/// <reference path="Objects/GuildSettings.ts" />
+/// <reference path="Objects/VoteChannel.ts" />
+
+
 //Discord bot
 //The end goal of this project is to create a bot to moderate a server with useful features.
 
 import { Client, DiscordAPIError, Guild, RichEmbed, TextChannel } from "discord.js";
+import { GuildSettings } from "./Objects/GuildSettings";
+import { VoteChannel } from "./Objects/VoteChannel";
+import guildSettingsJson from "./guildSettings.json";
 
 //random todos:
 //wanna refactor out the whole cmd is the first word and args are the rest, just work with the whole word array rather than splitting it up
@@ -9,14 +16,11 @@ import { Client, DiscordAPIError, Guild, RichEmbed, TextChannel } from "discord.
 //make bot accept all friend requests for users privacy reasons
 
 //Bot/Library vars
-const token: any = () => 
-{
-    let x: NodeRequire | undefined; 
-    try
-    {
+const token: any = () => {
+    let x: NodeRequire | undefined;
+    try {
         x = require("./token.json"); //comment this out for commit
-    } catch(e)
-    {
+    } catch (e) {
         x = undefined;
     }
     return x;
@@ -34,12 +38,9 @@ var guildSettings: Array<GuildSettings> = [];
 ///
 /// inGuildList: Checks if targetGuild is in the provided guildList
 ///
-function inGuildList(guildList: Array<GuildSettings>, targetGuild: Guild): boolean
-{
-    for(var guild of guildList)
-    {
-        if(guild.guildId === targetGuild.id)
-        {
+function inGuildList(guildList: Array<GuildSettings>, targetGuild: Guild): boolean {
+    for (var guild of guildList) {
+        if (guild.guildId === targetGuild.id) {
             return true;
         }
     }
@@ -49,14 +50,11 @@ function inGuildList(guildList: Array<GuildSettings>, targetGuild: Guild): boole
 ///
 ///getGuildInGuildList: Gets GuildSettings object from GuildList provided, using the targetGuildId
 ///
-function getGuildInGuildList(guildList: Array<GuildSettings>, targetGuildId: string): GuildSettings | null
-{
-    for(var guild of guildList)
-    {
+function getGuildInGuildList(guildList: Array<GuildSettings>, targetGuildId: string): GuildSettings | null {
+    for (var guild of guildList) {
         console.log(`In getguildinlist, guild = ${guild}`);
         console.log(guild.guildId + " / " + targetGuildId);
-        if(guild.guildId === targetGuildId)
-        {
+        if (guild.guildId === targetGuildId) {
             console.log(`Found guild ${targetGuildId} in guild list`);
             return guild;
         }
@@ -64,50 +62,46 @@ function getGuildInGuildList(guildList: Array<GuildSettings>, targetGuildId: str
     return null;
 }
 
-function sanitizeChannelReference(channelReference: string): string
-{
+function sanitizeChannelReference(channelReference: string): string {
     return channelReference.substring(2, channelReference.length - 1);
 }
 
-function exportGuildSettings(guildSettingsList: Array<GuildSettings>)
-{
+function exportGuildSettings(guildSettingsList: Array<GuildSettings>) {
     var guildListJSON = JSON.stringify(guildSettingsList);
-    fs.writeFile("guildSettings.json", guildListJSON, (err) => {if(err) console.log(`Error writing to guildListJSON: ${err}`)});
+    fs.writeFile("guildSettings.json", guildListJSON, (err) => { if (err) console.log(`Error writing to guildListJSON: ${err}`) });
 }
 
+
 //occurs when bot hits "ready" state
-bot.on("ready", async () =>
-{
+bot.on("ready", async () => {
     console.log(`${bot.user.username} is online!`);
-    bot.user.setActivity("The troints will matter");
+    bot.user.setActivity("Under Construction");
 
     //TODO: import guildSettings from JSON, then create ones that don't have settings yet
-    var guildSettingsList: Array<GuildSettings> = JSON.parse(fs.readFileSync("guildSettings.json", "utf-8"));
-    console.log(`Printing guild settings list: ${guildSettingsList}`);
-    if(guildSettingsList != null)
-    {
-        for(var gs of guildSettingsList)
-        {
+    //var text = fs.readFileSync("guildSettings.json");
+    //var guildSettingsList: Array<GuildSettings> = guildSettingsJson;
+    //console.log(`Printing guild settings list: ${guildSettingsList}`);
+    //if (guildSettingsList != null) {
+        for (var gs of guildSettingsJson) {
             console.log(`Printing gs: ${gs}: ${gs[0]}`);
             var vcs: Array<VoteChannel> = [];
-            for(var vc of gs.VoteChannels)
-            {
+            for (var vc of gs.VoteChannels) {
                 console.log(`Building vote channels: Current vc: ${vc}, channel: ${vc.channel}, emoji: ${vc.emoji}`);
-                vcs.push(new VoteChannel(vc.channel, vc.emoji));
+                let newVc: VoteChannel = new VoteChannel(vc.channel, vc.emoji)
+                vcs.push(newVc);
             }
 
             //may need to make this constructor
             console.log(`Pushing existing guild (from json). id: ${gs.guildId}, vcs: ${vcs}`);
             guildSettings.push(new GuildSettings(gs.guildId, gs.botConfigChannel, vcs));
         }
-    }
+    //}
 
     bot.guilds.map(guild => {
-        if(!inGuildList(guildSettings, guild))
-        {
+        if (!inGuildList(guildSettings, guild)) {
             console.log("Pushing new guild (not json)");
             guildSettings.push(new GuildSettings(guild.id));
-        }        
+        }
     });
 
     exportGuildSettings(guildSettings);
@@ -124,33 +118,28 @@ bot.on("ready", async () =>
 
 //should make these commands send embeds
 //when a user joins
-bot.on("guildMemberAdd", member => 
-{
+bot.on("guildMemberAdd", member => {
     console.log(`In Guild Member Add, target guild id = ${member.guild.id}`);
     var memberGuild = getGuildInGuildList(guildSettings, member.guild.id);
-    if(memberGuild == null) return;
-    if(memberGuild.botConfigChannel != null)
-    {
+    if (memberGuild == null) return;
+    if (memberGuild.botConfigChannel != null) {
         console.log("New member, bot config channel set");
         (member.guild.channels.get(memberGuild.botConfigChannel) as TextChannel).send(`Welcome, ${member}. Ohio!`);
     }
 });
 
 //when a user leaves
-bot.on("guildMemberRemove", member => 
-{
+bot.on("guildMemberRemove", member => {
     console.log(`In Guild Member Add, target guild id = ${member.guild.id}`);
     var memberGuild = getGuildInGuildList(guildSettings, member.guild.id);
-    if(memberGuild == null) return;
-    if(memberGuild.botConfigChannel != null)
-    {
+    if (memberGuild == null) return;
+    if (memberGuild.botConfigChannel != null) {
         console.log("Ex member, bot config channel set");
         (member.guild.channels.get(memberGuild.botConfigChannel) as TextChannel).send(`${member} (${member.displayName}) left. We'll come back for you!!`);
     }
 });
 
-bot.on("presenceUpdate", (oldMember, newMember) =>
-{
+bot.on("presenceUpdate", (oldMember, newMember) => {
     //this is a hacky way to check a random chance every so often. it assumes someone in the server will change presence at least once an hour.
     //that wakes this command up and it will check if its a new hour and a valid hour and will run the check
     //var h = new Date().getHours();
@@ -174,11 +163,10 @@ bot.on("presenceUpdate", (oldMember, newMember) =>
 })
 
 //when the bot gets a message notification
-bot.on("message", async message => 
-{
+bot.on("message", async message => {
     console.log("----------------------------------------");
     //don't respond to bots
-    if(message.author.bot) return;
+    if (message.author.bot) return;
 
 
     let tradPrefix: string = botconfig.tradPrefix;      //traditional command prefix
@@ -191,12 +179,11 @@ bot.on("message", async message =>
     let args = messageArray.slice(1);
 
 
-    
+
     //////////////////////
     //Put DM commands here
     //////////////////////
-    if(message.channel.type === "dm")
-    {
+    if (message.channel.type === "dm") {
         //Need to generalize this process for multiple servers. May move it out of DMs and into a specific channel, bu i think dms is good
         //if(cmd == "addq")
         //{
@@ -221,21 +208,21 @@ bot.on("message", async message =>
         //{
         //    console.log(getCharSheetByName(playersList, message.content.slice(6)));
         //    getCharSheetByName(playersList, message.content.slice(6)).attackBonus = 3;
-            
+
         //}
 
         //if(cmd == "setwp2")
         //{
         //    console.log(getCharSheetByName(playersList, message.content.slice(7)));
         //    getCharSheetByName(playersList, message.content.slice(7)).attackBonus = 2;
-            
+
         //}
 
         //if(cmd == "setwp1")
         //{
         //    console.log(getCharSheetByName(playersList, message.content.slice(7)));
         //    getCharSheetByName(playersList, message.content.slice(7)).attackBonus = 1;
-            
+
         //}
 
         //if(cmd == "sethp")
@@ -296,22 +283,22 @@ bot.on("message", async message =>
         //commenting out secret santa because it shares variables across guilds. need to isolate that
         //if(cmd === `${tradPrefix}secretSanta`)
         //{
-            //secretSanta submit
+        //secretSanta submit
         //    if(args[0] === "submit")
         //    {
-                //make sure the player is in secret santa
+        //make sure the player is in secret santa
         //        if(!message.author in SSPlayerList)
         //        {
         //            message.channel.send("You are not registered for the current Secret Santa session.");
         //            return;
         //        }
-                //make sure there is a message
+        //make sure there is a message
         //        if(args.length === 1)
         //        {
         //            message.channel.send("Please use !secretSanta submit [message that includes the gift code/link].");
         //            return;
         //        }
-                //record the message in the appropriate spot of gifts list
+        //record the message in the appropriate spot of gifts list
         //        var PlayerIndex = SSPlayerList.indexOf(message.author);                 //Find the index in playerList of the person who sent this message
         //        var TargetIndex = SSPlayerList.indexOf(SSTargetList[PlayerIndex]);      //Find the index in playerList of the target of the person who sent this message
         //        SSGiftList[TargetIndex] = args.slice(1).join(" ");
@@ -353,7 +340,7 @@ bot.on("message", async message =>
     //            console.log()
     //            if(Math.random() < .55)
     //            {
-                    //hit
+    //hit
     //                console.log(getCharSheetByName(playersList, victim.user.username).name);
     //                getCharSheetByName(playersList, victim.user.username).health -= getCharSheetByName(playersList, message.author.username).getAttackPower();
     //                returnString += `You hit dealing ${getCharSheetByName(playersList, message.author.username).getAttackPower()} damage (${getCharSheetByName(playersList, victim.user.username).health}hp left). `
@@ -365,7 +352,7 @@ bot.on("message", async message =>
     //            }
     //            else
     //            {
-                    //miss
+    //miss
     //                console.log(getCharSheetByName(playersList, victim.user.username).name);
     //                getCharSheetByName(playersList, message.author.username).health -= getCharSheetByName(playersList, victim.user.username).getAttackPower();
     //                returnString += `You miss, and get counterattacked taking ${getCharSheetByName(playersList, victim.user.username).getAttackPower()} damage (${getCharSheetByName(playersList, message.author.username).health}hp left). `
@@ -388,34 +375,30 @@ bot.on("message", async message =>
     ///////////////////////////
 
     //smultimash
-    for(let word in messageArray) //why the hecc does word give an index and not a word javascript is dumb {answered: gotta do for/of, not for/in}
+    for (let word in messageArray) //why the hecc does word give an index and not a word javascript is dumb {answered: gotta do for/of, not for/in}
     {
-        if(/^sm.*u.*sh/i.test(messageArray[word]))
-        {
+        if (/^sm.*u.*sh/i.test(messageArray[word])) {
             console.log("Fixing smush");
             message.channel.send("Looks like you made a typo. Lemme take care of that for you :)");
-            message.delete().catch(O_o=>{console.log("Couldn't delete?")});
+            message.delete().catch(O_o => { console.log("Couldn't delete?") });
 
             //Todo: Send an embed saying "person x says: message but smush is replaced"
         }
     }
 
-    if(/s.ot.?.*w.?oz.*/i.test(message.content.toLowerCase()))
-    {
+    if (/s.ot.?.*w.?oz.*/i.test(message.content.toLowerCase())) {
         console.log("How dare you say that name in this server");
-        message.delete().catch(O_o=>{console.log("Couldn't delete?")});
+        message.delete().catch(O_o => { console.log("Couldn't delete?") });
     }
 
     //stonks
-    for(let word of messageArray) //why the hecc does word give an index and not a word javascript is dumb {answered: gotta do for/of, not for/in}
+    for (let word of messageArray) //why the hecc does word give an index and not a word javascript is dumb {answered: gotta do for/of, not for/in}
     {
-        if(word.toLowerCase() == "stocks")
-        {
+        if (word.toLowerCase() == "stocks") {
             message.channel.send("*Stonks");
             return;
         }
-        if(word.toLowerCase() == "stock")
-        {
+        if (word.toLowerCase() == "stock") {
             message.channel.send("*Stonk");
             return;
         }
@@ -425,13 +408,12 @@ bot.on("message", async message =>
     var msgGuildSettings = getGuildInGuildList(guildSettings, message.guild.id);
     var voteChannel = msgGuildSettings?.voteChannelsContains(message.channel);
     console.log(`Vote Channel = ${voteChannel}`);
-    if(voteChannel != null)
-    {
+    if (voteChannel != null) {
         console.log("This is a vote channel. Checking for attachments");
-        if(message.attachments.size > 0 || message.content.includes("https://") || message.content.includes("http://"))
-        {
-            console.log("reacting");
-            message.react(voteChannel.emoji);
+        if (message.attachments.size > 0 || message.content.includes("https://") || message.content.includes("http://")) {
+            console.log("reacting with " + voteChannel.emoji);
+            message.react(voteChannel.emoji)
+                .catch();
         }
     }
 
@@ -459,87 +441,21 @@ bot.on("message", async message =>
     //    }
     //}
 
-    
-
-
-    ////////////////////////////////////////////////////////////
-    //Place CASUAL commands that the bot can say no to down here
-    ////////////////////////////////////////////////////////////
-    //road map for these commands
-    //allow the bot to randomly say yes or no
-    //have them reply with :ok_hand: or an x emoji
-    //don't allow one person to spam commands
-
-    //verify that its a casual command
-    if(cmd === `${casPrefix}`)
-    {
-        if(args[0] === `${casQualifier}`)
-        {
-            args = args.slice(1);
-
-            for(var i = 0; i < args.length; i++)
-            {
-                //if(args[i] === "gaslight")
-                //{
-                    //gaslight
-                    //ideal syntax: hey bot, [can you] gaslight @x [...]
-                    //responses: none, agreement (gaslights those people), dissent (gaslights user instead)
-
-                //    if(gaslit === null)
-                //    {
-                //        args = args.slice[i + 1];
-                //        var user = message.mentions.users.first()
-                //        var sender = message.author;
-
-                //        var decision = Math.random() * 10;
-                //        if(decision === 1)
-                //        {
-                //            gaslit = sender;
-                //            glTimeout = new Date(message.createdAt.getTime() + 60*60000);   //timeout is 60 minutes
-                //            message.react('😠');
-                //            console.log(`Gaslighting ${gaslit.username}`);
-                //            break;
-                //        }
-                //        if(decision <= 5)
-                //        {
-                //            gaslit = user;
-                //            glTimeout = new Date(message.createdAt.getTime() + 60*60000);   //timeout is 60 minutes
-                //            message.react('👌');
-                //            console.log(`Gaslighting ${gaslit.username}`);
-                //            break;
-                //        }
-                //        console.log(`Gaslighting no one`);
-                //        break;
-                //    }
-                //    else
-                //    {
-                //        console.log("Someone is already gaslit");
-                //    }
-
-                //}
-            }
-        }
-    }
-
 
     /////////////////////////////////
     //Place CONFIG commands down here
     /////////////////////////////////
-    if(cmd === `${tradPrefix}setUpvote`)
-    {
-        if(args.length < 1 || args.length > 2)
-        {
+    if (cmd === `${tradPrefix}setUpvote`) {
+        if (args.length < 1 || args.length > 2) {
             message.channel.send("I'm sorry old sport, I didn't understand that.");
             return;
         }
         var emoji: string;
-        if(args.length == 2)
-        {
+        if (args.length == 2) {
             emoji = args[1];
         }
-        else
-        {
-            emoji = '👍';
+        else {
+            emoji = '??';
         }
         var upvoteChannel = new VoteChannel(args[0], emoji);
         console.log(upvoteChannel);
@@ -547,27 +463,22 @@ bot.on("message", async message =>
         exportGuildSettings(guildSettings);
     }
 
-    if(cmd === `${tradPrefix}setBotConfig`)
-    {
-        if(args.length > 1)
-        {
+    if (cmd === `${tradPrefix}setBotConfig`) {
+        if (args.length > 1) {
             message.channel.send("I'm sorry old sport, I didn't understand that.");
             return;
         }
         var configChannel: string | undefined = undefined;
         console.log("Setting config channel");
-        if(args.length == 1)
-        {
+        if (args.length == 1) {
             configChannel = args[0];
             console.log(`Config Channel = ${configChannel}`);
         }
-        else
-        {
+        else {
             configChannel = message.channel.id;
             console.log(`Config Channel = ${configChannel}`);
         }
-        if(configChannel != undefined)
-        {
+        if (configChannel != undefined) {
             console.log("Executing SetConfigChannel");
             guildSettings.find(guildSetting => guildSetting.guildId === message.guild.id)?.SetConfigChannel(configChannel);
         }
@@ -581,34 +492,30 @@ bot.on("message", async message =>
     //////////////////////////////////////
 
     //help
-    if(cmd === `${tradPrefix}help`)
-    {
+    if (cmd === `${tradPrefix}help`) {
         console.log("Displaying Help");
         /*if(message.channel.name != botconfig.botchannel)
         {
             return message.channel.send(`${cmd} must be sent in the ${botconfig.botchannel} channel`);
         }*/
         //help with specific command
-        if(args.length === 1)
-        {
-            switch(args[0])
-            {
+        if (args.length === 1) {
+            switch (args[0]) {
                 default:
                     return message.channel.send("Yeah its a pain to do a specific help dialog for each command I always get mad when things don't have this but deal.");
             }
         }
         //help general
-        else
-        {
+        else {
             let helpembed: RichEmbed = new Discord.RichEmbed()
-            .setDescription("Available Commands: (This list is incomplete and incorrect)")
-            .setColor("#CC7F3A")
-            .addField("!help", "Show this message")
-            .addField("!setBotConfig", "Designates a channel as the bot config channel. This is required to get server join/leave messages")
-            .addField("!setUpvote #channel [emoji]", "Designates a channel to be an upvote channel, where Jeeves reacts to every attachment with the specified emoji to start an upvote. Default is thumbs up")
-            .addField("!poll [question]", "Reacts to your question with a yes no and meh option for people to vote on")
-            .addField("Passive Commands", "This bot may also contain some passive triggers when it sees messages with certain words")
-            .addField("For More:", "visit https://github.com/armhandstudios/ScottBot");
+                .setDescription("Available Commands: (This list is incomplete and incorrect)")
+                .setColor("#CC7F3A")
+                .addField("!help", "Show this message")
+                .addField("!setBotConfig", "Designates a channel as the bot config channel. This is required to get server join/leave messages")
+                .addField("!setUpvote #channel [emoji]", "Designates a channel to be an upvote channel, where Jeeves reacts to every attachment with the specified emoji to start an upvote. Default is thumbs up")
+                .addField("!poll [question]", "Reacts to your question with a yes no and meh option for people to vote on")
+                .addField("Passive Commands", "This bot may also contain some passive triggers when it sees messages with certain words")
+                .addField("For More:", "visit https://github.com/armhandstudios/ScottBot");
 
             return message.channel.send(helpembed)
         }
@@ -617,31 +524,28 @@ bot.on("message", async message =>
     //addrole [name] [color]
     //fuuuuuuuck ok theres error handling but these trash methods don't seem to throw errors
     //so invalid colors will just default
-    if(cmd === `${tradPrefix}addrole`)
-    {
+    if (cmd === `${tradPrefix}addrole`) {
         var roleColor: string;
         //check how many args there are
-        if(args.length === 0)
-        {
+        if (args.length === 0) {
             message.channel.send("I'm sorry old sport, I didn't understand that.");
             return;
         }
 
         //set color if necessary
-        if(args.length > 1)
-        {
-            roleColor = args[1]; 
-            message.guild.createRole({name: args[0], color: roleColor})
-            .then(() => message.channel.send(`${args[0]} role created.`))
-            .catch(error => {
-                message.channel.send("There was an error creating the role.");
-                console.log(error);
-            });
+        if (args.length > 1) {
+            roleColor = args[1];
+            message.guild.createRole({ name: args[0], color: roleColor })
+                .then(() => message.channel.send(`${args[0]} role created.`))
+                .catch(error => {
+                    message.channel.send("There was an error creating the role.");
+                    console.log(error);
+                });
             return;
         }
-        
+
         //just the rolename
-        message.guild.createRole({name: args[0]})
+        message.guild.createRole({ name: args[0] })
             .then(() => message.channel.send(`${args[0]} role created.`))
             .catch(error => {
                 message.channel.send("There was an error creating the role.");
@@ -654,9 +558,8 @@ bot.on("message", async message =>
 
     //poll
     //Reacts to a command with a thumbs up and thumbs down
-    if(cmd === `${tradPrefix}poll`)
-    {
-        message.react('👍').then(() => message.react('🤷').then(() => message.react('👎')));
+    if (cmd === `${tradPrefix}poll`) {
+        message.react('👍').then(() => message.react('🤷')).then(() => message.react('👎')).catch();
     }
 
     //Secret Santa
@@ -667,15 +570,15 @@ bot.on("message", async message =>
     //secretSanta submit [message]: Sent through DMs to the bot. Submits your gift, the message, to the bot.
     //secretSanta end: Can only be sent by a Mod?. Ends the game of secret santa and DMs each target their gift.
     //secretSanta help: Displays the above list of commands.
-    
+
     //TODO: Permissionlock commands
 
     //if(cmd ===`${tradPrefix}secretSanta`)
     //{
-        //secretSanta start
+    //secretSanta start
     //    if(args[0] === "start")
     //    {
-            //check to see if there is already a secret santa going on
+    //check to see if there is already a secret santa going on
     //        if(isSSactive)
     //        {
     //            console.log("Unable to start Secret Santa, one already exists.");
@@ -683,13 +586,13 @@ bot.on("message", async message =>
     //            return;
     //        }
 
-            //no secret santa is currently ongoing, so we start a new one
+    //no secret santa is currently ongoing, so we start a new one
     //        isSSactive = true;
     //        SSPlayerList = [];
     //        SSTargetList = [];
     //        SSGiftList = [];
 
-            //fill in description if applicable, or give it default value
+    //fill in description if applicable, or give it default value
     //        SSDesc = "No description given."
     //        if(args.length > 1)
     //        {
@@ -700,69 +603,69 @@ bot.on("message", async message =>
     //        return;
     //    }
 
-        //secretSanta about
+    //secretSanta about
     //    if(args[0] === "about")
     //    {
-            //make sure there is currently a SS active
+    //make sure there is currently a SS active
     //        if(!isSSactive)
     //        {
     //            message.channel.send("No Secret Santa is currently active.");
     //            return;
     //        }
 
-            //send the Secret Santa Descripiton
+    //send the Secret Santa Descripiton
     //        message.channel.send(SSDesc);
     //        return;
     //    }
 
-        //secretSanta join
+    //secretSanta join
     //    if(args[0] === "join")
     //    {
-            //make sure there is currently a SS active
+    //make sure there is currently a SS active
     //        if(!isSSactive)
     //        {
     //            message.channel.send("No Secret Santa is currently active.");
     //            return;
     //        }
 
-            //Check if the user is currently in the Secret Santa
+    //Check if the user is currently in the Secret Santa
     //        if(message.author in SSPlayerList)
     //        {
     //            message.channel.send("You are already registered for this Secret Santa.");
     //            return;
     //        }
 
-            //register the user for secret santa
+    //register the user for secret santa
     //        SSPlayerList.push(message.author);
     //        message.channel.send(`${message.author} has been added to the Secret Santa`);
     //        return;
     //    }
 
-        //secretSanta assign
+    //secretSanta assign
     //    if(args[0] === "assign")
     //    {
-            //make sure there is currently a SS active
+    //make sure there is currently a SS active
     //        if(!isSSactive)
     //        {
     //            message.channel.send("No Secret Santa is currently active.");
     //            return;
     //        }
 
-            //shuffle the members until none of them match the original list (i won't get myself as a secret santa)
+    //shuffle the members until none of them match the original list (i won't get myself as a secret santa)
     //        SSTargetList = SSPlayerList.slice();
     //        var currentIndex = SSPlayerList.length, temporaryValue, randomIndex;
 
-            //i tried spacing this while statement out better and it was still unreadable so might as well make it look like good spaghetti
+    //i tried spacing this while statement out better and it was still unreadable so might as well make it look like good spaghetti
     //        while(() => {for(var i = 0; i < SSPlayerList.length; i++){if(SSPlayerList[i] == SSTargetList[i]){return true;}} return false;})
     //        {// While there remain elements to shuffle...
-    //            while (0 !== currentIndex) 
+    //            while (0 !== currentIndex)
     //            {
 
-                    // Pick a remaining element...
+    // Pick a remaining element...
     //                randomIndex = Math.floor(Math.random() * currentIndex);
     //                currentIndex -= 1;
 
-                    // And swap it with the current element.
+    // And swap it with the current element.
     //                temporaryValue = SSTargetList[currentIndex];
     //                SSTargetList[currentIndex] = SSTargetList[randomIndex];
     //                SSTargetList[randomIndex] = temporaryValue;
@@ -773,7 +676,7 @@ bot.on("message", async message =>
     //        console.log(`Target List: ${SSTargetList}`);
 
     //        SSGiftList = [];
-            //DM people their target, while instantiating the giftlist
+    //DM people their target, while instantiating the giftlist
     //        for(var i = 0; i < SSPlayerList.length; i++)
     //        {
     //            SSPlayerList[i].send(`Your Secret Santa target is ${SSTargetList[i].username}. Use !secretSanta submit [message] in this channel to submit your gift.`);
@@ -784,35 +687,35 @@ bot.on("message", async message =>
     //    }
 
 
-        //secretSanta submit
-            //This command is written up in the DM commands section
+    //secretSanta submit
+    //This command is written up in the DM commands section
 
 
-        //secretSanta end
+    //secretSanta end
     //    if(args[0] === "end")
     //    {
-            //make sure there is currently a SS active
+    //make sure there is currently a SS active
     //        if(!isSSactive)
     //        {
     //            message.channel.send("No Secret Santa is currently active.");
     //            return;
     //        }
 
-            //post that the secret santa is over
-            //TODO: @ everyone who was in the secret santa
+    //post that the secret santa is over
+    //TODO: @ everyone who was in the secret santa
     //        message.channel.send("The Secret Santa is over! Please check your DMs from me to see your gift!");
 
-            //dm everyone their message
+    //dm everyone their message
     //        for(var i = 0; i < SSPlayerList.length; i++)
     //        {
     //            SSPlayerList[i].send(`Here is your Secret Santa gift!: ${SSGiftList[i]}`);
     //        }
 
-            //clean up variables
+    //clean up variables
     //        isSSactive = false;
     //    }
 
-        //secretSanta help
+    //secretSanta help
     //    if(args[0] === "help")
     //    {
     //        let helpEmbed = new Discord.RichEmbed()
@@ -831,16 +734,69 @@ bot.on("message", async message =>
     //}
 
 
+    ////////////////////////////////////////////////////////////
+    //Place CASUAL commands that the bot can say no to down here
+    ////////////////////////////////////////////////////////////
+    //road map for these commands
+    //allow the bot to randomly say yes or no
+    //have them reply with :ok_hand: or an x emoji
+    //don't allow one person to spam commands
+
+    //verify that its a casual command
+    if (cmd === `${casPrefix}`) {
+        if (args[0] === `${casQualifier}`) {
+            args = args.slice(1);
+
+            for (var i = 0; i < args.length; i++) {
+                //if(args[i] === "gaslight")
+                //{
+                //gaslight
+                //ideal syntax: hey bot, [can you] gaslight @x [...]
+                //responses: none, agreement (gaslights those people), dissent (gaslights user instead)
+
+                //    if(gaslit === null)
+                //    {
+                //        args = args.slice[i + 1];
+                //        var user = message.mentions.users.first()
+                //        var sender = message.author;
+
+                //        var decision = Math.random() * 10;
+                //        if(decision === 1)
+                //        {
+                //            gaslit = sender;
+                //            glTimeout = new Date(message.createdAt.getTime() + 60*60000);   //timeout is 60 minutes
+                //            message.react('??');
+                //            console.log(`Gaslighting ${gaslit.username}`);
+                //            break;
+                //        }
+                //        if(decision <= 5)
+                //        {
+                //            gaslit = user;
+                //            glTimeout = new Date(message.createdAt.getTime() + 60*60000);   //timeout is 60 minutes
+                //            message.react('??');
+                //            console.log(`Gaslighting ${gaslit.username}`);
+                //            break;
+                //        }
+                //        console.log(`Gaslighting no one`);
+                //        break;
+                //    }
+                //    else
+                //    {
+                //        console.log("Someone is already gaslit");
+                //    }
+
+                //}
+            }
+        }
+    }
 
 });
 
-if(token() == null)
-{
+if (token() == null) {
     console.log("using environment var");
     bot.login(process.env.discordToken);
 }
-else
-{
+else {
     console.log(token());
     bot.login(token().token);
 }
