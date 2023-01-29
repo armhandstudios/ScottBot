@@ -4,11 +4,14 @@
   "description": "Jeeves",
   "main": "app.js",
   "author": {
-    "name": ""
+    "name": "Scott Jette"
   },
   "scripts": {
     "build": "tsc --build",
     "clean": "tsc --build --clean"
+  },
+  "dependencies": {
+    "discord.js": "^11.6.4"
   },
   "devDependencies": {
     "@types/node": "^14.14.7",
