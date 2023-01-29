@@ -19,7 +19,7 @@ import guildSettingsJson from "./guildSettings.json";
 const token: any = () => {
     let x: NodeRequire | undefined;
     try {
-        x = require("./token.json"); //comment this out for commit
+        //x = require("./token.json"); //comment this out for commit
     } catch (e) {
         x = undefined;
     }
