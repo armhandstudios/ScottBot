@@ -6,10 +6,6 @@
   "author": {
     "name": "Scott Jette"
   },
-  "scripts": {
-    "build": "tsc --build",
-    "clean": "tsc --build --clean"
-  },
   "dependencies": {
     "discord.js": "^11.6.4"
   },
