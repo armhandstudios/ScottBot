@@ -1,2 +1,1 @@
-cd Jeeves\Jeeves
-worker: node app.js
+worker: node Jeeves\Jeeves\app.js
