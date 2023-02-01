@@ -1,1 +1,1 @@
-worker: node Jeeves\Jeeves\app.js
+worker: node app.js
