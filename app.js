@@ -1,6 +1,4 @@
 "use strict";
-/// <reference path="Objects/GuildSettings.ts" />
-/// <reference path="Objects/VoteChannel.ts" />
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -14,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+process.stdout.write("Starting Jeeves");
 const GuildSettings_1 = require("./Objects/GuildSettings");
 const VoteChannel_1 = require("./Objects/VoteChannel");
 const guildSettings_json_1 = __importDefault(require("./guildSettings.json"));
@@ -25,7 +24,7 @@ const guildSettings_json_1 = __importDefault(require("./guildSettings.json"));
 const token = () => {
     let x;
     try {
-        x = require("./token.json"); //comment this out for commit
+        //x = require("./token.json"); //comment this out for commit
     }
     catch (e) {
         x = undefined;
@@ -79,20 +78,20 @@ bot.on("ready", () => __awaiter(void 0, void 0, void 0, function* () {
     //var text = fs.readFileSync("guildSettings.json");
     //var guildSettingsList: Array<GuildSettings> = guildSettingsJson;
     //console.log(`Printing guild settings list: ${guildSettingsList}`);
-    //if (guildSettingsList != null) {
-    for (var gs of guildSettings_json_1.default) {
-        console.log(`Printing gs: ${gs}: ${gs[0]}`);
-        var vcs = [];
-        for (var vc of gs.VoteChannels) {
-            console.log(`Building vote channels: Current vc: ${vc}, channel: ${vc.channel}, emoji: ${vc.emoji}`);
-            let newVc = new VoteChannel_1.VoteChannel(vc.channel, vc.emoji);
-            vcs.push(newVc);
+    if (guildSettings_json_1.default.length > 0) {
+        for (var gs of guildSettings_json_1.default) {
+            console.log(`Printing gs: ${gs}: ${gs[0]}`);
+            var vcs = [];
+            for (var vc of gs.VoteChannels) {
+                console.log(`Building vote channels: Current vc: ${vc}, channel: ${vc.channel}, emoji: ${vc.emoji}`);
+                let newVc = new VoteChannel_1.VoteChannel(vc.channel, vc.emoji);
+                vcs.push(newVc);
+            }
+            //may need to make this constructor
+            console.log(`Pushing existing guild (from json). id: ${gs.guildId}, vcs: ${vcs}`);
+            guildSettings.push(new GuildSettings_1.GuildSettings(gs.guildId, gs.botConfigChannel, vcs));
         }
-        //may need to make this constructor
-        console.log(`Pushing existing guild (from json). id: ${gs.guildId}, vcs: ${vcs}`);
-        guildSettings.push(new GuildSettings_1.GuildSettings(gs.guildId, gs.botConfigChannel, vcs));
     }
-    //}
     bot.guilds.map(guild => {
         if (!inGuildList(guildSettings, guild)) {
             console.log("Pushing new guild (not json)");

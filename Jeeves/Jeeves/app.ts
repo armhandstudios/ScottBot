@@ -83,7 +83,7 @@ bot.on("ready", async () => {
     //var text = fs.readFileSync("guildSettings.json");
     //var guildSettingsList: Array<GuildSettings> = guildSettingsJson;
     //console.log(`Printing guild settings list: ${guildSettingsList}`);
-    //if (guildSettingsList != null) {
+    if (guildSettingsJson.length > 0) {
         for (var gs of guildSettingsJson) {
             console.log(`Printing gs: ${gs}: ${gs[0]}`);
             var vcs: Array<VoteChannel> = [];
@@ -97,7 +97,7 @@ bot.on("ready", async () => {
             console.log(`Pushing existing guild (from json). id: ${gs.guildId}, vcs: ${vcs}`);
             guildSettings.push(new GuildSettings(gs.guildId, gs.botConfigChannel, vcs));
         }
-    //}
+    }
 
     bot.guilds.map(guild => {
         if (!inGuildList(guildSettings, guild)) {
