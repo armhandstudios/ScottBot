@@ -1,4 +1,6 @@
-﻿/// <reference path="Objects/GuildSettings.ts" />
+﻿process.stdout.write("Starting Jeeves");
+
+/// <reference path="Objects/GuildSettings.ts" />
 /// <reference path="Objects/VoteChannel.ts" />
 
 
