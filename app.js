@@ -444,6 +444,13 @@ bot.on("message", (message) => __awaiter(void 0, void 0, void 0, function* () {
         }
         exportGuildSettings(guildSettings);
     }
+    if (cmd === `${tradPrefix}outConfig`) {
+        if (args.length > 1) {
+            message.channel.send("I'm sorry old sport, I didn't understand that.");
+            return;
+        }
+        console.log(guildSettings_json_1.default);
+    }
     //////////////////////////////////////
     //Place TRADITIONAL commands down here
     //////////////////////////////////////
