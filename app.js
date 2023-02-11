@@ -454,7 +454,13 @@ bot.on("message", (message) => __awaiter(void 0, void 0, void 0, function* () {
         console.log(guildSettings_json_1.default);
         console.log("\nGuild Settings json:");
         console.log("-------------------");
-        console.log(fs.readFile("./guildSettings.json", "utf8"));
+        fs.readFile("./guildSettings.json", "utf8", (err, jsonString) => {
+            if (err) {
+                console.log("Couldn't read json; ", err);
+                return;
+            }
+            console.log(jsonString);
+        });
     }
     //////////////////////////////////////
     //Place TRADITIONAL commands down here

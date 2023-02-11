@@ -504,7 +504,13 @@ bot.on("message", async message => {
         console.log(guildSettingsJson);
         console.log("\nGuild Settings json:");
         console.log("-------------------");
-        console.log(fs.readFile("./guildSettings.json", "utf8"));
+        fs.readFile("./guildSettings.json", "utf8", (err, jsonString) => {
+            if (err) {
+                console.log("Couldn't read json; ", err);
+                return;
+            }
+            console.log(jsonString);
+        });
     }
 
 
