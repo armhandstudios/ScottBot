@@ -449,7 +449,12 @@ bot.on("message", (message) => __awaiter(void 0, void 0, void 0, function* () {
             message.channel.send("I'm sorry old sport, I didn't understand that.");
             return;
         }
+        console.log("Guild Settings list:");
+        console.log("-------------------");
         console.log(guildSettings_json_1.default);
+        console.log("\nGuild Settings json:");
+        console.log("-------------------");
+        console.log(fs.readFile("./guildSettings.json", "utf8"));
     }
     //////////////////////////////////////
     //Place TRADITIONAL commands down here
