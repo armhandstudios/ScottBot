@@ -492,6 +492,14 @@ bot.on("message", async message => {
         exportGuildSettings(guildSettings);
     }
 
+    if (cmd === `${tradPrefix}outConfig`)
+    {
+        if (args.length > 1) {
+            message.channel.send("I'm sorry old sport, I didn't understand that.");
+            return;
+        }
+        console.log(guildSettingsJson);
+    }
 
 
     //////////////////////////////////////
