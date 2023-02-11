@@ -451,7 +451,7 @@ bot.on("message", (message) => __awaiter(void 0, void 0, void 0, function* () {
         }
         console.log("Guild Settings list:");
         console.log("-------------------");
-        console.log(guildSettings_json_1.default);
+        console.log(guildSettings);
         console.log("\nGuild Settings json:");
         console.log("-------------------");
         fs.readFile("./guildSettings.json", "utf8", (err, jsonString) => {
