@@ -501,7 +501,7 @@ bot.on("message", async message => {
         }
         console.log("Guild Settings list:");
         console.log("-------------------");
-        console.log(guildSettingsJson);
+        console.log(guildSettings);
         console.log("\nGuild Settings json:");
         console.log("-------------------");
         fs.readFile("./guildSettings.json", "utf8", (err, jsonString) => {
