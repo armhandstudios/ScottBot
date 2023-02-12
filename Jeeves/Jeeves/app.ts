@@ -96,8 +96,8 @@ function logConfig(source: string) {
 //occurs when bot hits "ready" state
 bot.on("ready", async () => {
     console.log(`${bot.user.username} is online!`);
-    bot.user.setActivity("Try !poll 🤰 🫃");
-
+    bot.user.setActivity("Try !poll 🤰 👌");
+    
     //TODO: import guildSettings from JSON, then create ones that don't have settings yet
     //var text = fs.readFileSync("guildSettings.json");
     //var guildSettingsList: Array<GuildSettings> = guildSettingsJson;
