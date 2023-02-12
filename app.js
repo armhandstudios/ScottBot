@@ -27,7 +27,7 @@ const RegexHandler_1 = require("./MessageHandlers/RegexHandler");
 const token = () => {
     let x;
     try {
-        x = require("./token.json"); //comment this out for commit
+        //x = require("./token.json"); //comment this out for commit
     }
     catch (e) {
         x = undefined;
@@ -703,6 +703,6 @@ if (token() == null) {
 }
 else {
     console.log(token());
-    bot.login(token().token).catch();
+    bot.login(token().token);
 }
 //# sourceMappingURL=app.js.map
