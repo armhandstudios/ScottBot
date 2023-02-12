@@ -2,15 +2,18 @@
 
 /// <reference path="Objects/GuildSettings.ts" />
 /// <reference path="Objects/VoteChannel.ts" />
+/// <reference path="ConfigHandlers/ConfigHandler.ts" />
 
 
 //Discord bot
 //The end goal of this project is to create a bot to moderate a server with useful features.
 
-import { Client, DiscordAPIError, Guild, RichEmbed, TextChannel } from "discord.js";
+import { Client, DiscordAPIError, Guild, MessageReaction, RichEmbed, TextChannel } from "discord.js";
 import { GuildSettings } from "./Objects/GuildSettings";
 import { VoteChannel } from "./Objects/VoteChannel";
+import { ConfigHandler } from "./MessageHandlers/ConfigHandler";
 import guildSettingsJson from "./guildSettings.json";
+import { RegexHandler } from "./MessageHandlers/RegexHandler";
 
 //random todos:
 //wanna refactor out the whole cmd is the first word and args are the rest, just work with the whole word array rather than splitting it up
@@ -35,7 +38,7 @@ const { Console } = require("console");
 
 const bot: Client = new Discord.Client({});
 
-var guildSettings: Array<GuildSettings> = [];
+export var guildSettings: Array<GuildSettings> = []; 
 
 ///
 /// inGuildList: Checks if targetGuild is in the provided guildList
@@ -68,7 +71,7 @@ function sanitizeChannelReference(channelReference: string): string {
     return channelReference.substring(2, channelReference.length - 1);
 }
 
-function exportGuildSettings(guildSettingsList: Array<GuildSettings>) {
+export function exportGuildSettings(guildSettingsList: Array<GuildSettings>) {
     var guildListJSON = JSON.stringify(guildSettingsList);
     fs.writeFile("guildSettings.json", guildListJSON, (err) => { if (err) console.log(`Error writing to guildListJSON: ${err}`) });
     logConfig("exportGuildSettings");
@@ -392,35 +395,11 @@ bot.on("message", async message => {
     //Put PASSIVE commands here
     ///////////////////////////
 
-    //smultimash
-    for (let word in messageArray) //why the hecc does word give an index and not a word javascript is dumb {answered: gotta do for/of, not for/in}
-    {
-        if (/^sm.*u.*sh/i.test(messageArray[word])) {
-            console.log("Fixing smush");
-            message.channel.send("Looks like you made a typo. Lemme take care of that for you :)");
-            message.delete().catch(O_o => { console.log("Couldn't delete?") });
-
-            //Todo: Send an embed saying "person x says: message but smush is replaced"
-        }
+    if (new RegexHandler().ingest(messageArray, message)) {
+        return;
     }
+      
 
-    if (/s.ot.?.*w.?oz.*/i.test(message.content.toLowerCase())) {
-        console.log("How dare you say that name in this server");
-        message.delete().catch(O_o => { console.log("Couldn't delete?") });
-    }
-
-    //stonks
-    for (let word of messageArray) //why the hecc does word give an index and not a word javascript is dumb {answered: gotta do for/of, not for/in}
-    {
-        if (word.toLowerCase() == "stocks") {
-            message.channel.send("*Stonks");
-            return;
-        }
-        if (word.toLowerCase() == "stock") {
-            message.channel.send("*Stonk");
-            return;
-        }
-    }
 
     //upvote channel passive effect
     var msgGuildSettings = getGuildInGuildList(guildSettings, message.guild.id);
@@ -468,44 +447,10 @@ bot.on("message", async message => {
     /////////////////////////////////
     //Place CONFIG commands down here
     /////////////////////////////////
-    if (cmd === `${tradPrefix}setUpvote`) {
-        if (args.length < 1 || args.length > 2) {
-            message.channel.send("I'm sorry old sport, I didn't understand that.");
-            return;
-        }
-        var emoji: string;
-        if (args.length == 2) {
-            emoji = args[1];
-        }
-        else {
-            emoji = '👍';
-        }
-        var upvoteChannel = new VoteChannel(args[0], emoji);
-        console.log(upvoteChannel);
-        guildSettings.find(guildSetting => guildSetting.guildId === message.guild.id)?.SetVoteChannel(upvoteChannel);
-        exportGuildSettings(guildSettings);
-    }
+    
 
-    if (cmd === `${tradPrefix}setBotConfig`) {
-        if (args.length > 1) {
-            message.channel.send("I'm sorry old sport, I didn't understand that.");
-            return;
-        }
-        var configChannel: string | undefined = undefined;
-        console.log("Setting config channel");
-        if (args.length == 1) {
-            configChannel = args[0];
-            console.log(`Config Channel = ${configChannel}`);
-        }
-        else {
-            configChannel = message.channel.id;
-            console.log(`Config Channel = ${configChannel}`);
-        }
-        if (configChannel != undefined) {
-            console.log("Executing SetConfigChannel");
-            guildSettings.find(guildSetting => guildSetting.guildId === message.guild.id)?.SetConfigChannel(configChannel);
-        }
-        exportGuildSettings(guildSettings);
+    if (new ConfigHandler().ingest(messageArray, message)){
+        return;
     }
 
     if (cmd === `${tradPrefix}outConfig`)
@@ -590,7 +535,30 @@ bot.on("message", async message => {
     //poll
     //Reacts to a command with a thumbs up and thumbs down
     if (cmd === `${tradPrefix}poll`) {
-        message.react('👍').then(() => message.react('🤷')).then(() => message.react('👎')).catch();
+        let reactionsList: string[] = [];
+        for (let reaction of args) {
+            if (message.guild.emojis.find(emoji => emoji.name === reaction) != undefined) {
+                reactionsList.push(reaction);
+            }
+            else break;
+        }
+
+        if (reactionsList.length == 0) {
+            message.react('👍').then(() => message.react('🤷')).then(() => message.react('👎')).catch();
+        }
+
+        else {
+            let chain: Promise<MessageReaction> = undefined;
+            for (let reaction of reactionsList) {
+                if (chain == undefined) {
+                    chain = message.react(reaction);
+                }
+                else {
+                    chain = chain.then(() => message.react(reaction));
+                }
+            }
+            chain.catch();
+        }
     }
 
     //Secret Santa
