@@ -480,11 +480,16 @@ bot.on("message", (message) => __awaiter(void 0, void 0, void 0, function* () {
     if (cmd === `${tradPrefix}poll`) {
         let reactionsList = [];
         for (let reaction of args) {
+            console.log("Parsing args for reactions; found ", reaction);
             if (message.guild.emojis.find(emoji => emoji.name === reaction) != undefined) {
+                console.log("Pushing ", reaction);
                 reactionsList.push(reaction);
             }
-            else
+            else {
+                console.log("Found non-emoji; breaking. ", reaction);
                 break;
+            }
+            ;
         }
         if (reactionsList.length == 0) {
             message.react('👍').then(() => message.react('🤷')).then(() => message.react('👎')).catch();

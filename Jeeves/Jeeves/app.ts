@@ -537,10 +537,15 @@ bot.on("message", async message => {
     if (cmd === `${tradPrefix}poll`) {
         let reactionsList: string[] = [];
         for (let reaction of args) {
+            console.log("Parsing args for reactions; found ", reaction);
             if (message.guild.emojis.find(emoji => emoji.name === reaction) != undefined) {
+                console.log("Pushing ", reaction);
                 reactionsList.push(reaction);
             }
-            else break;
+            else {
+                console.log("Found non-emoji; breaking. ", reaction);
+                break
+            };
         }
 
         if (reactionsList.length == 0) {
