@@ -93,7 +93,7 @@ function logConfig(source) {
 //occurs when bot hits "ready" state
 bot.on("ready", () => __awaiter(void 0, void 0, void 0, function* () {
     console.log(`${bot.user.username} is online!`);
-    bot.user.setActivity("Under Construction");
+    bot.user.setActivity("Try !poll 🤰 🫃");
     //TODO: import guildSettings from JSON, then create ones that don't have settings yet
     //var text = fs.readFileSync("guildSettings.json");
     //var guildSettingsList: Array<GuildSettings> = guildSettingsJson;
@@ -437,7 +437,7 @@ bot.on("message", (message) => __awaiter(void 0, void 0, void 0, function* () {
                 .addField("!help", "Show this message")
                 .addField("!setBotConfig", "Designates a channel as the bot config channel. This is required to get server join/leave messages")
                 .addField("!setUpvote #channel [emoji]", "Designates a channel to be an upvote channel, where Jeeves reacts to every attachment with the specified emoji to start an upvote. Default is thumbs up")
-                .addField("!poll [question]", "Reacts to your question with a yes no and meh option for people to vote on")
+                .addField("!poll [question]", "Reacts to your question with a yes no and meh option for people to vote on. You can also specify custom options by placing emojis before the question, separated by spaces!")
                 .addField("Passive Commands", "This bot may also contain some passive triggers when it sees messages with certain words")
                 .addField("For More:", "visit https://github.com/armhandstudios/ScottBot");
             return message.channel.send(helpembed);
@@ -483,12 +483,18 @@ bot.on("message", (message) => __awaiter(void 0, void 0, void 0, function* () {
             console.log("Parsing args for reactions; found ", reaction);
             let emojiMatch = message.guild.emojis.find(emoji => emoji.toString() === reaction);
             if (emojiMatch != undefined) {
-                console.log("Pushing ", emojiMatch);
+                console.log("Pushing custom emoji ", emojiMatch.name);
                 reactionsList.push(emojiMatch);
             }
             else {
-                console.log("Found non-emoji; breaking. ", reaction);
-                break;
+                if (/\p{Emoji}/u.test(reaction)) {
+                    console.log("Pushing non custom emoji ", reaction);
+                    reactionsList.push(reaction);
+                }
+                else {
+                    console.log("Found non-emoji; breaking. ", reaction);
+                    break;
+                }
             }
             ;
         }
