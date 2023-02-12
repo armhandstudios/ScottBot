@@ -1,4 +1,5 @@
 "use strict";
+///<reference path="../botconfig.json"/>
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BaseHandler = void 0;
 const botconfig = require("../botconfig.json");

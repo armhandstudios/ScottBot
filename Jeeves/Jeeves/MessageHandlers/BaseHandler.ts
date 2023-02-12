@@ -1,3 +1,5 @@
+///<reference path="../botconfig.json"/>
+
 import { Client, DiscordAPIError, Guild, Message, RichEmbed, TextChannel } from "discord.js";
 
 const botconfig = require("../botconfig.json");
