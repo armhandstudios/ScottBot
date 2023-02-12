@@ -481,10 +481,10 @@ bot.on("message", (message) => __awaiter(void 0, void 0, void 0, function* () {
         let reactionsList = [];
         for (let reaction of args) {
             console.log("Parsing args for reactions; found ", reaction);
-            let randomEmoji = message.guild.emojis.random();
-            if (message.guild.emojis.find(emoji => emoji.toString() === reaction) != undefined) {
-                console.log("Pushing ", reaction);
-                reactionsList.push(reaction);
+            let emojiMatch = message.guild.emojis.find(emoji => emoji.toString() === reaction);
+            if (emojiMatch != undefined) {
+                console.log("Pushing ", emojiMatch);
+                reactionsList.push(emojiMatch);
             }
             else {
                 console.log("Found non-emoji; breaking. ", reaction);

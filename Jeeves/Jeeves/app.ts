@@ -8,7 +8,7 @@
 //Discord bot
 //The end goal of this project is to create a bot to moderate a server with useful features.
 
-import { Client, DiscordAPIError, Guild, MessageReaction, RichEmbed, TextChannel } from "discord.js";
+import { Client, DiscordAPIError, Emoji, Guild, MessageReaction, RichEmbed, TextChannel } from "discord.js";
 import { GuildSettings } from "./Objects/GuildSettings";
 import { VoteChannel } from "./Objects/VoteChannel";
 import { ConfigHandler } from "./MessageHandlers/ConfigHandler";
@@ -535,13 +535,13 @@ bot.on("message", async message => {
     //poll
     //Reacts to a command with a thumbs up and thumbs down
     if (cmd === `${tradPrefix}poll`) {
-        let reactionsList: string[] = [];
+        let reactionsList: Emoji[] = [];
         for (let reaction of args) {
             console.log("Parsing args for reactions; found ", reaction);
-            let randomEmoji = message.guild.emojis.random();
-            if (message.guild.emojis.find(emoji => emoji.toString() === reaction) != undefined) {
-                console.log("Pushing ", reaction);
-                reactionsList.push(reaction);
+            let emojiMatch = message.guild.emojis.find(emoji => emoji.toString() === reaction)
+            if(emojiMatch != undefined) {
+                console.log("Pushing ", emojiMatch);
+                reactionsList.push(emojiMatch);
             }
             else {
                 console.log("Found non-emoji; breaking. ", reaction);
