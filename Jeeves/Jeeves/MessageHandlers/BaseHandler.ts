@@ -1,6 +1,6 @@
 import { Client, DiscordAPIError, Guild, Message, RichEmbed, TextChannel } from "discord.js";
 
-const botconfig = require("./botconfig.json");
+const botconfig = require("../botconfig.json");
 
 export abstract class BaseHandler {
     tradPrefix: string = botconfig.tradPrefix;      //traditional command prefix
