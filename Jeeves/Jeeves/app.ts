@@ -539,8 +539,7 @@ bot.on("message", async message => {
         for (let reaction of args) {
             console.log("Parsing args for reactions; found ", reaction);
             let randomEmoji = message.guild.emojis.random();
-            console.log(randomEmoji.name, ";;;", randomEmoji.id, ",,,", randomEmoji.identifier, ";;;", randomEmoji.toString());
-            if (message.guild.emojis.find(emoji => emoji.identifier === reaction) != undefined) {
+            if (message.guild.emojis.find(emoji => emoji.toString() === reaction) != undefined) {
                 console.log("Pushing ", reaction);
                 reactionsList.push(reaction);
             }
