@@ -71,9 +71,24 @@ function sanitizeChannelReference(channelReference: string): string {
 function exportGuildSettings(guildSettingsList: Array<GuildSettings>) {
     var guildListJSON = JSON.stringify(guildSettingsList);
     fs.writeFile("guildSettings.json", guildListJSON, (err) => { if (err) console.log(`Error writing to guildListJSON: ${err}`) });
-    
+    logConfig("exportGuildSettings");
 }
 
+function logConfig(source: string) {
+    console.log("Logging config from ", source);
+    console.log("Guild Settings list:");
+    console.log("-------------------");
+    console.log(guildSettings);
+    console.log("\nGuild Settings json:");
+    console.log("-------------------");
+    fs.readFile("./guildSettings.json", "utf8", (err, jsonString) => {
+        if (err) {
+            console.log("Couldn't read json; ", err);
+            return;
+        }
+        console.log(jsonString);
+    });
+}
 
 //occurs when bot hits "ready" state
 bot.on("ready", async () => {
@@ -499,18 +514,7 @@ bot.on("message", async message => {
             message.channel.send("I'm sorry old sport, I didn't understand that.");
             return;
         }
-        console.log("Guild Settings list:");
-        console.log("-------------------");
-        console.log(guildSettings);
-        console.log("\nGuild Settings json:");
-        console.log("-------------------");
-        fs.readFile("./guildSettings.json", "utf8", (err, jsonString) => {
-            if (err) {
-                console.log("Couldn't read json; ", err);
-                return;
-            }
-            console.log(jsonString);
-        });
+        logConfig("outConfig command");
     }
 
 
