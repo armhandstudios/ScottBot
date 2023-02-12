@@ -42,10 +42,20 @@
     <Content Include="tsconfig.json" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="MessageHandlers\" />
     <Folder Include="Objects\" />
     <Folder Include="Objects\Trivia\" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="MessageHandlers\BaseHandler.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="MessageHandlers\ConfigHandler.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="MessageHandlers\RegexHandler.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="Objects\GuildSettings.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>

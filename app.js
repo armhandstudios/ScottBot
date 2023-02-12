@@ -12,10 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.exportGuildSettings = exports.guildSettings = void 0;
 process.stdout.write("Starting Jeeves");
 const GuildSettings_1 = require("./Objects/GuildSettings");
 const VoteChannel_1 = require("./Objects/VoteChannel");
+const ConfigHandler_1 = require("./MessageHandlers/ConfigHandler");
 const guildSettings_json_1 = __importDefault(require("./guildSettings.json"));
+const RegexHandler_1 = require("./MessageHandlers/RegexHandler");
 //random todos:
 //wanna refactor out the whole cmd is the first word and args are the rest, just work with the whole word array rather than splitting it up
 //command to lock help commands to a specific channel. if i do this, then will need to track for channel changes to the server.
@@ -24,7 +27,7 @@ const guildSettings_json_1 = __importDefault(require("./guildSettings.json"));
 const token = () => {
     let x;
     try {
-        //x = require("./token.json"); //comment this out for commit
+        x = require("./token.json"); //comment this out for commit
     }
     catch (e) {
         x = undefined;
@@ -36,7 +39,7 @@ const Discord = require("discord.js");
 const fs = require("fs");
 const { Console } = require("console");
 const bot = new Discord.Client({});
-var guildSettings = [];
+exports.guildSettings = [];
 ///
 /// inGuildList: Checks if targetGuild is in the provided guildList
 ///
@@ -69,6 +72,23 @@ function exportGuildSettings(guildSettingsList) {
     var guildListJSON = JSON.stringify(guildSettingsList);
     fs.writeFile("guildSettings.json", guildListJSON, (err) => { if (err)
         console.log(`Error writing to guildListJSON: ${err}`); });
+    logConfig("exportGuildSettings");
+}
+exports.exportGuildSettings = exportGuildSettings;
+function logConfig(source) {
+    console.log("Logging config from ", source);
+    console.log("Guild Settings list:");
+    console.log("-------------------");
+    console.log(exports.guildSettings);
+    console.log("\nGuild Settings json:");
+    console.log("-------------------");
+    fs.readFile("./guildSettings.json", "utf8", (err, jsonString) => {
+        if (err) {
+            console.log("Couldn't read json; ", err);
+            return;
+        }
+        console.log(jsonString);
+    });
 }
 //occurs when bot hits "ready" state
 bot.on("ready", () => __awaiter(void 0, void 0, void 0, function* () {
@@ -89,16 +109,16 @@ bot.on("ready", () => __awaiter(void 0, void 0, void 0, function* () {
             }
             //may need to make this constructor
             console.log(`Pushing existing guild (from json). id: ${gs.guildId}, vcs: ${vcs}`);
-            guildSettings.push(new GuildSettings_1.GuildSettings(gs.guildId, gs.botConfigChannel, vcs));
+            exports.guildSettings.push(new GuildSettings_1.GuildSettings(gs.guildId, gs.botConfigChannel, vcs));
         }
     }
     bot.guilds.map(guild => {
-        if (!inGuildList(guildSettings, guild)) {
+        if (!inGuildList(exports.guildSettings, guild)) {
             console.log("Pushing new guild (not json)");
-            guildSettings.push(new GuildSettings_1.GuildSettings(guild.id));
+            exports.guildSettings.push(new GuildSettings_1.GuildSettings(guild.id));
         }
     });
-    exportGuildSettings(guildSettings);
+    exportGuildSettings(exports.guildSettings);
     //need to generalize this action beyond just my server. Additionally, it should save this if it goes offline, rather than initialize it every startup.
     //var membersWithRole = bot.guilds.get("263039543048011778").members.filter(member => { return member.roles.find("name", "Trontestant")}).map(member =>
     //    {
@@ -111,7 +131,7 @@ bot.on("ready", () => __awaiter(void 0, void 0, void 0, function* () {
 //when a user joins
 bot.on("guildMemberAdd", member => {
     console.log(`In Guild Member Add, target guild id = ${member.guild.id}`);
-    var memberGuild = getGuildInGuildList(guildSettings, member.guild.id);
+    var memberGuild = getGuildInGuildList(exports.guildSettings, member.guild.id);
     if (memberGuild == null)
         return;
     if (memberGuild.botConfigChannel != null) {
@@ -122,7 +142,7 @@ bot.on("guildMemberAdd", member => {
 //when a user leaves
 bot.on("guildMemberRemove", member => {
     console.log(`In Guild Member Add, target guild id = ${member.guild.id}`);
-    var memberGuild = getGuildInGuildList(guildSettings, member.guild.id);
+    var memberGuild = getGuildInGuildList(exports.guildSettings, member.guild.id);
     if (memberGuild == null)
         return;
     if (memberGuild.botConfigChannel != null) {
@@ -153,7 +173,6 @@ bot.on("presenceUpdate", (oldMember, newMember) => {
 });
 //when the bot gets a message notification
 bot.on("message", (message) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
     console.log("----------------------------------------");
     //don't respond to bots
     if (message.author.bot)
@@ -338,34 +357,11 @@ bot.on("message", (message) => __awaiter(void 0, void 0, void 0, function* () {
     ///////////////////////////
     //Put PASSIVE commands here
     ///////////////////////////
-    //smultimash
-    for (let word in messageArray) //why the hecc does word give an index and not a word javascript is dumb {answered: gotta do for/of, not for/in}
-     {
-        if (/^sm.*u.*sh/i.test(messageArray[word])) {
-            console.log("Fixing smush");
-            message.channel.send("Looks like you made a typo. Lemme take care of that for you :)");
-            message.delete().catch(O_o => { console.log("Couldn't delete?"); });
-            //Todo: Send an embed saying "person x says: message but smush is replaced"
-        }
-    }
-    if (/s.ot.?.*w.?oz.*/i.test(message.content.toLowerCase())) {
-        console.log("How dare you say that name in this server");
-        message.delete().catch(O_o => { console.log("Couldn't delete?"); });
-    }
-    //stonks
-    for (let word of messageArray) //why the hecc does word give an index and not a word javascript is dumb {answered: gotta do for/of, not for/in}
-     {
-        if (word.toLowerCase() == "stocks") {
-            message.channel.send("*Stonks");
-            return;
-        }
-        if (word.toLowerCase() == "stock") {
-            message.channel.send("*Stonk");
-            return;
-        }
+    if (new RegexHandler_1.RegexHandler().ingest(messageArray, message)) {
+        return;
     }
     //upvote channel passive effect
-    var msgGuildSettings = getGuildInGuildList(guildSettings, message.guild.id);
+    var msgGuildSettings = getGuildInGuildList(exports.guildSettings, message.guild.id);
     var voteChannel = msgGuildSettings === null || msgGuildSettings === void 0 ? void 0 : msgGuildSettings.voteChannelsContains(message.channel);
     console.log(`Vote Channel = ${voteChannel}`);
     if (voteChannel != null) {
@@ -406,61 +402,15 @@ bot.on("message", (message) => __awaiter(void 0, void 0, void 0, function* () {
     /////////////////////////////////
     //Place CONFIG commands down here
     /////////////////////////////////
-    if (cmd === `${tradPrefix}setUpvote`) {
-        if (args.length < 1 || args.length > 2) {
-            message.channel.send("I'm sorry old sport, I didn't understand that.");
-            return;
-        }
-        var emoji;
-        if (args.length == 2) {
-            emoji = args[1];
-        }
-        else {
-            emoji = '👍';
-        }
-        var upvoteChannel = new VoteChannel_1.VoteChannel(args[0], emoji);
-        console.log(upvoteChannel);
-        (_a = guildSettings.find(guildSetting => guildSetting.guildId === message.guild.id)) === null || _a === void 0 ? void 0 : _a.SetVoteChannel(upvoteChannel);
-        exportGuildSettings(guildSettings);
-    }
-    if (cmd === `${tradPrefix}setBotConfig`) {
-        if (args.length > 1) {
-            message.channel.send("I'm sorry old sport, I didn't understand that.");
-            return;
-        }
-        var configChannel = undefined;
-        console.log("Setting config channel");
-        if (args.length == 1) {
-            configChannel = args[0];
-            console.log(`Config Channel = ${configChannel}`);
-        }
-        else {
-            configChannel = message.channel.id;
-            console.log(`Config Channel = ${configChannel}`);
-        }
-        if (configChannel != undefined) {
-            console.log("Executing SetConfigChannel");
-            (_b = guildSettings.find(guildSetting => guildSetting.guildId === message.guild.id)) === null || _b === void 0 ? void 0 : _b.SetConfigChannel(configChannel);
-        }
-        exportGuildSettings(guildSettings);
+    if (new ConfigHandler_1.ConfigHandler().ingest(messageArray, message)) {
+        return;
     }
     if (cmd === `${tradPrefix}outConfig`) {
         if (args.length > 1) {
             message.channel.send("I'm sorry old sport, I didn't understand that.");
             return;
         }
-        console.log("Guild Settings list:");
-        console.log("-------------------");
-        console.log(guildSettings);
-        console.log("\nGuild Settings json:");
-        console.log("-------------------");
-        fs.readFile("./guildSettings.json", "utf8", (err, jsonString) => {
-            if (err) {
-                console.log("Couldn't read json; ", err);
-                return;
-            }
-            console.log(jsonString);
-        });
+        logConfig("outConfig command");
     }
     //////////////////////////////////////
     //Place TRADITIONAL commands down here
@@ -528,7 +478,29 @@ bot.on("message", (message) => __awaiter(void 0, void 0, void 0, function* () {
     //poll
     //Reacts to a command with a thumbs up and thumbs down
     if (cmd === `${tradPrefix}poll`) {
-        message.react('👍').then(() => message.react('🤷')).then(() => message.react('👎')).catch();
+        let reactionsList = [];
+        for (let reaction of args) {
+            if (message.guild.emojis.find(emoji => emoji.name === reaction) != undefined) {
+                reactionsList.push(reaction);
+            }
+            else
+                break;
+        }
+        if (reactionsList.length == 0) {
+            message.react('👍').then(() => message.react('🤷')).then(() => message.react('👎')).catch();
+        }
+        else {
+            let chain = undefined;
+            for (let reaction of reactionsList) {
+                if (chain == undefined) {
+                    chain = message.react(reaction);
+                }
+                else {
+                    chain = chain.then(() => message.react(reaction));
+                }
+            }
+            chain.catch();
+        }
     }
     //Secret Santa
     //secretSanta start [Description]: Starts the secret santa event. Can only be started by a Mod?.
@@ -731,6 +703,6 @@ if (token() == null) {
 }
 else {
     console.log(token());
-    bot.login(token().token);
+    bot.login(token().token).catch();
 }
 //# sourceMappingURL=app.js.map
