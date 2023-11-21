@@ -25,7 +25,7 @@ const guildSettings_json_1 = __importDefault(require("./guildSettings.json"));
 const token = () => {
     let x;
     try {
-        //x = require("./token.json"); //comment this out for commit
+        x = require("./token.json"); //comment this out for commit
     }
     catch (e) {
         x = undefined;
