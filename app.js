@@ -477,6 +477,7 @@ bot.on("message", (message) => __awaiter(void 0, void 0, void 0, function* () {
     //Leaving this as a todo. need to make sure it only deletes ones its created. prolly gonna have to leave this til its ready to go live.
     //poll
     //Reacts to a command with a thumbs up and thumbs down
+    //TODO: Crashes if bot has permission to view a channel, but not permission to react in a channel
     if (cmd === `${tradPrefix}poll`) {
         let reactionsList = [];
         for (let reaction of args) {
