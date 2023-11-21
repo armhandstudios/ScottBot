@@ -27,7 +27,7 @@ const RegexHandler_1 = require("./MessageHandlers/RegexHandler");
 const token = () => {
     let x;
     try {
-        //x = require("./token.json"); //comment this out for commit
+        x = require("./token.json"); //comment this out for commit
     }
     catch (e) {
         x = undefined;
@@ -718,4 +718,12 @@ else {
     console.log(token());
     bot.login(token().token);
 }
+process.on("uncaughtException", (reason, p) => {
+    console.error(reason, "Uncaught Exception at Promise", p);
+    process.exit(1);
+});
+process.on("unhandledRejection", (reason, p) => {
+    console.error(reason, "Unhandled Rejection at Promise", p);
+    process.exit(1);
+});
 //# sourceMappingURL=app.js.map
