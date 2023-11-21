@@ -1,11 +1,11 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.VoteChannel = void 0;
-class VoteChannel {
-    constructor(_channel, _emoji) {
+var VoteChannel = /** @class */ (function () {
+    function VoteChannel(_channel, _emoji) {
         this.channel = _channel; //channel's ID
         this.emoji = _emoji; //emoji to react with
     }
-}
+    return VoteChannel;
+}());
 exports.VoteChannel = VoteChannel;
-//# sourceMappingURL=VoteChannel.js.map

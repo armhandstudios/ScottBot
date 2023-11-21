@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -91,7 +82,7 @@ function logConfig(source) {
     });
 }
 //occurs when bot hits "ready" state
-bot.on("ready", () => __awaiter(void 0, void 0, void 0, function* () {
+bot.on("ready", async () => {
     console.log(`${bot.user.username} is online!`);
     bot.user.setActivity("Try !poll 🤰 👌");
     //TODO: import guildSettings from JSON, then create ones that don't have settings yet
@@ -112,12 +103,12 @@ bot.on("ready", () => __awaiter(void 0, void 0, void 0, function* () {
             exports.guildSettings.push(new GuildSettings_1.GuildSettings(gs.guildId, gs.botConfigChannel, vcs));
         }
     }
-    bot.guilds.map(guild => {
+    bot.guilds.fetch().then(guilds => guilds.each(guild => {
         if (!inGuildList(exports.guildSettings, guild)) {
             console.log("Pushing new guild (not json)");
             exports.guildSettings.push(new GuildSettings_1.GuildSettings(guild.id));
         }
-    });
+    }));
     exportGuildSettings(exports.guildSettings);
     //need to generalize this action beyond just my server. Additionally, it should save this if it goes offline, rather than initialize it every startup.
     //var membersWithRole = bot.guilds.get("263039543048011778").members.filter(member => { return member.roles.find("name", "Trontestant")}).map(member =>
@@ -126,7 +117,7 @@ bot.on("ready", () => __awaiter(void 0, void 0, void 0, function* () {
     //        playersList.push(new CharacterSheet(member.user.username));
     //        console.log(playersList);
     //    });
-}));
+});
 //should make these commands send embeds
 //when a user joins
 bot.on("guildMemberAdd", member => {
@@ -136,7 +127,7 @@ bot.on("guildMemberAdd", member => {
         return;
     if (memberGuild.botConfigChannel != null) {
         console.log("New member, bot config channel set");
-        member.guild.channels.get(memberGuild.botConfigChannel).send(`Welcome, ${member}. Ohio!`);
+        member.guild.channels.fetch(memberGuild.botConfigChannel).then(fetched => fetched.send(`Welcome, ${member}. Ohio!`));
     }
 });
 //when a user leaves
@@ -147,7 +138,7 @@ bot.on("guildMemberRemove", member => {
         return;
     if (memberGuild.botConfigChannel != null) {
         console.log("Ex member, bot config channel set");
-        member.guild.channels.get(memberGuild.botConfigChannel).send(`${member} (${member.displayName}) left. We'll come back for you!!`);
+        member.guild.channels.fetch(memberGuild.botConfigChannel).then(fetched => fetched.send(`${member} (${member.displayName}) left. We'll come back for you!!`));
     }
 });
 bot.on("presenceUpdate", (oldMember, newMember) => {
@@ -172,7 +163,7 @@ bot.on("presenceUpdate", (oldMember, newMember) => {
     //   }
 });
 //when the bot gets a message notification
-bot.on("message", (message) => __awaiter(void 0, void 0, void 0, function* () {
+bot.on("message", async (message) => {
     console.log("----------------------------------------");
     //don't respond to bots
     if (message.author.bot)
@@ -362,7 +353,7 @@ bot.on("message", (message) => __awaiter(void 0, void 0, void 0, function* () {
     }
     //upvote channel passive effect
     var msgGuildSettings = getGuildInGuildList(exports.guildSettings, message.guild.id);
-    var voteChannel = msgGuildSettings === null || msgGuildSettings === void 0 ? void 0 : msgGuildSettings.voteChannelsContains(message.channel);
+    var voteChannel = msgGuildSettings?.voteChannelsContains(message.channel);
     console.log(`Vote Channel = ${voteChannel}`);
     if (voteChannel != null) {
         console.log("This is a vote channel. Checking for attachments");
@@ -431,12 +422,14 @@ bot.on("message", (message) => __awaiter(void 0, void 0, void 0, function* () {
         }
         //help general
         else {
-            let helpembed = new Discord.RichEmbed()
+            let helpembed = new Discord.Embed()
                 .setDescription("Available Commands: (This list is incomplete and incorrect)")
                 .setColor("#CC7F3A")
                 .addField("!help", "Show this message")
                 .addField("!setBotConfig", "Designates a channel as the bot config channel. This is required to get server join/leave messages")
                 .addField("!setUpvote #channel [emoji]", "Designates a channel to be an upvote channel, where Jeeves reacts to every attachment with the specified emoji to start an upvote. Default is thumbs up")
+                .addField("!setDefaultName #channel [defaultChannelName]", "Sets the default name of a channel to the given value. If no value is given, it will set the default channel name to its current name. To be used with !revertChannelNames")
+                .addField("!revertChannelNames", "Reverts all channel names with a default value to their default value. See !setDefaultName")
                 .addField("!poll [question]", "Reacts to your question with a yes no and meh option for people to vote on. You can also specify custom options by placing emojis before the question, separated by spaces!")
                 .addField("Passive Commands", "This bot may also contain some passive triggers when it sees messages with certain words")
                 .addField("For More:", "visit https://github.com/armhandstudios/ScottBot");
@@ -709,7 +702,7 @@ bot.on("message", (message) => __awaiter(void 0, void 0, void 0, function* () {
             }
         }
     }
-}));
+});
 if (token() == null) {
     console.log("using environment var");
     bot.login(process.env.discordToken);

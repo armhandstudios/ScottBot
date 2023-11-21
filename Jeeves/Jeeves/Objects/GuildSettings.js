@@ -1,40 +1,43 @@
 "use strict";
 /// <reference path="VoteChannel.ts" />
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.GuildSettings = void 0;
-class GuildSettings {
-    constructor(_guildId, _botConfigChannel, _voteChannels = []) {
-        console.log(`Adding guild w id ${_guildId}`);
+var GuildSettings = /** @class */ (function () {
+    function GuildSettings(_guildId, _botConfigChannel, _voteChannels) {
+        if (_voteChannels === void 0) { _voteChannels = []; }
+        console.log("Adding guild w id ".concat(_guildId));
         this.guildId = _guildId;
         this.botConfigChannel = _botConfigChannel;
         this.VoteChannels = [];
-        for (var vc of _voteChannels) {
+        for (var _i = 0, _voteChannels_1 = _voteChannels; _i < _voteChannels_1.length; _i++) {
+            var vc = _voteChannels_1[_i];
             this.VoteChannels.push(vc);
         }
     }
-    voteChannelsContains(channel) {
-        console.log(`voteChannelContains searching for ${channel}`);
-        for (var voteChannel of this.VoteChannels) {
-            console.log(`Testing against ${voteChannel.channel}`);
+    GuildSettings.prototype.voteChannelsContains = function (channel) {
+        console.log("voteChannelContains searching for ".concat(channel));
+        for (var _i = 0, _a = this.VoteChannels; _i < _a.length; _i++) {
+            var voteChannel = _a[_i];
+            console.log("Testing against ".concat(voteChannel.channel));
             if (voteChannel.channel == channel) {
-                console.log(`voteChannelContains did contain. Returning voteChannel`);
+                console.log("voteChannelContains did contain. Returning voteChannel");
                 return voteChannel;
             }
         }
-        console.log(`voteChannelContains did not contain. Returning null`);
+        console.log("voteChannelContains did not contain. Returning null");
         return null;
-    }
-    SetVoteChannel(voteChannel) {
+    };
+    GuildSettings.prototype.SetVoteChannel = function (voteChannel) {
         var _voteChannel = this.voteChannelsContains(voteChannel.channel);
         if (_voteChannel != null) {
             _voteChannel.emoji = voteChannel.emoji;
             return;
         }
         this.VoteChannels.push(voteChannel);
-    }
-    SetConfigChannel(configChannel) {
+    };
+    GuildSettings.prototype.SetConfigChannel = function (configChannel) {
         this.botConfigChannel = configChannel;
-    }
-}
+    };
+    return GuildSettings;
+}());
 exports.GuildSettings = GuildSettings;
-//# sourceMappingURL=GuildSettings.js.map

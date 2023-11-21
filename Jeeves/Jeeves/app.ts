@@ -8,7 +8,7 @@
 //Discord bot
 //The end goal of this project is to create a bot to moderate a server with useful features.
 
-import { Client, DiscordAPIError, Emoji, Guild, MessageReaction, RichEmbed, TextChannel } from "discord.js";
+import { Client, DiscordAPIError, Emoji, Guild, MessageReaction, Embed, TextChannel, BaseGuildTextChannel, BaseGuild } from "discord.js";
 import { GuildSettings } from "./Objects/GuildSettings";
 import { VoteChannel } from "./Objects/VoteChannel";
 import { ConfigHandler } from "./MessageHandlers/ConfigHandler";
@@ -43,7 +43,7 @@ export var guildSettings: Array<GuildSettings> = [];
 ///
 /// inGuildList: Checks if targetGuild is in the provided guildList
 ///
-function inGuildList(guildList: Array<GuildSettings>, targetGuild: Guild): boolean {
+function inGuildList(guildList: Array<GuildSettings>, targetGuild: BaseGuild): boolean {
     for (var guild of guildList) {
         if (guild.guildId === targetGuild.id) {
             return true;
@@ -118,12 +118,13 @@ bot.on("ready", async () => {
         }
     }
 
-    bot.guilds.map(guild => {
+    bot.guilds.fetch().then(guilds => guilds.each(guild =>
+    {
         if (!inGuildList(guildSettings, guild)) {
             console.log("Pushing new guild (not json)");
             guildSettings.push(new GuildSettings(guild.id));
         }
-    });
+    }));
 
     exportGuildSettings(guildSettings);
 
@@ -145,7 +146,7 @@ bot.on("guildMemberAdd", member => {
     if (memberGuild == null) return;
     if (memberGuild.botConfigChannel != null) {
         console.log("New member, bot config channel set");
-        (member.guild.channels.get(memberGuild.botConfigChannel) as TextChannel).send(`Welcome, ${member}. Ohio!`);
+        member.guild.channels.fetch(memberGuild.botConfigChannel).then(fetched => (fetched as BaseGuildTextChannel).send(`Welcome, ${member}. Ohio!`));
     }
 });
 
@@ -156,7 +157,7 @@ bot.on("guildMemberRemove", member => {
     if (memberGuild == null) return;
     if (memberGuild.botConfigChannel != null) {
         console.log("Ex member, bot config channel set");
-        (member.guild.channels.get(memberGuild.botConfigChannel) as TextChannel).send(`${member} (${member.displayName}) left. We'll come back for you!!`);
+        member.guild.channels.fetch(memberGuild.botConfigChannel).then(fetched => (fetched as TextChannel).send(`${member} (${member.displayName}) left. We'll come back for you!!`));
     }
 });
 
@@ -483,12 +484,14 @@ bot.on("message", async message => {
         }
         //help general
         else {
-            let helpembed: RichEmbed = new Discord.RichEmbed()
+            let helpembed: Embed = new Discord.Embed()
                 .setDescription("Available Commands: (This list is incomplete and incorrect)")
                 .setColor("#CC7F3A")
                 .addField("!help", "Show this message")
                 .addField("!setBotConfig", "Designates a channel as the bot config channel. This is required to get server join/leave messages")
                 .addField("!setUpvote #channel [emoji]", "Designates a channel to be an upvote channel, where Jeeves reacts to every attachment with the specified emoji to start an upvote. Default is thumbs up")
+                .addField("!setDefaultName #channel [defaultChannelName]", "Sets the default name of a channel to the given value. If no value is given, it will set the default channel name to its current name. To be used with !revertChannelNames" )
+                .addField("!revertChannelNames", "Reverts all channel names with a default value to their default value. See !setDefaultName" )
                 .addField("!poll [question]", "Reacts to your question with a yes no and meh option for people to vote on. You can also specify custom options by placing emojis before the question, separated by spaces!")
                 .addField("Passive Commands", "This bot may also contain some passive triggers when it sees messages with certain words")
                 .addField("For More:", "visit https://github.com/armhandstudios/ScottBot");

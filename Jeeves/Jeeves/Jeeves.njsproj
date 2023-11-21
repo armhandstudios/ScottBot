@@ -56,6 +56,7 @@
     <TypeScriptCompile Include="MessageHandlers\RegexHandler.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="Objects\ChannelDefaults.ts" />
     <TypeScriptCompile Include="Objects\GuildSettings.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
