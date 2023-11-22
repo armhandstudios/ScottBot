@@ -10,7 +10,7 @@ const ChannelDefaults_1 = require("../Objects/ChannelDefaults");
 class ConfigHandler extends BaseHandler_1.BaseHandler {
     ingest(messageArray, message) {
         let cmd = messageArray[0];
-        let args = messageArray.slice[1];
+        let args = messageArray.slice(1);
         if (cmd === `${this.tradPrefix}setBotConfig`) {
             this.SetBotConfig(args, message);
             return true;
@@ -105,7 +105,8 @@ class ConfigHandler extends BaseHandler_1.BaseHandler {
             return;
         }
         for (var channelDefault of gs.defaultChannelNames) {
-            message.guild.channels.fetch(channelDefault.channel)
+            var clippedSnowflake = channelDefault.channel.slice(2, -1);
+            message.guild.channels.fetch(clippedSnowflake) //channel being saved as <#sldkfjslkj>, its looking for the slkdfjsldkfh
                 .then(channel => channel.setName(channelDefault.defaultName, "Jeeves !revert command"))
                 .catch(err => console.log(err));
         }

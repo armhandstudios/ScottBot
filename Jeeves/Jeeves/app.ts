@@ -8,7 +8,7 @@
 //Discord bot
 //The end goal of this project is to create a bot to moderate a server with useful features.
 
-import { Client, GatewayIntentBits, DiscordAPIError, Emoji, Guild, MessageReaction, Embed, TextChannel, BaseGuildTextChannel, BaseGuild, IntentsBitField } from "discord.js";
+import { Client, GatewayIntentBits, DiscordAPIError, Emoji, Events, Guild, MessageReaction, Embed, TextChannel, BaseGuildTextChannel, BaseGuild, IntentsBitField, ColorResolvable, EmojiIdentifierResolvable } from "discord.js";
 import { GuildSettings } from "./Objects/GuildSettings";
 import { VoteChannel } from "./Objects/VoteChannel";
 import { ConfigHandler } from "./MessageHandlers/ConfigHandler";
@@ -38,7 +38,7 @@ const { Console } = require("console");
 
 const bot: Client = new Discord.Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildEmojisAndStickers,
-        GatewayIntentBits.GuildMembers, GatewayIntentBits.DirectMessages, GatewayIntentBits.DirectMessages, GatewayIntentBits.GuildMessageReactions,
+        GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMessageReactions,
         GatewayIntentBits.MessageContent]
 });
 
@@ -189,7 +189,7 @@ bot.on("presenceUpdate", (oldMember, newMember) => {
 })
 
 //when the bot gets a message notification
-bot.on("message", async message => {
+bot.on(Events.MessageCreate, async message => {
     console.log("----------------------------------------");
     //don't respond to bots
     if (message.author.bot) return;
@@ -209,7 +209,7 @@ bot.on("message", async message => {
     //////////////////////
     //Put DM commands here
     //////////////////////
-    if (message.channel.type === "dm") {
+    if (message.channel.type.toString().toLowerCase() === "dm") {
         //Need to generalize this process for multiple servers. May move it out of DMs and into a specific channel, bu i think dms is good
         //if(cmd == "addq")
         //{
@@ -403,12 +403,12 @@ bot.on("message", async message => {
     if (new RegexHandler().ingest(messageArray, message)) {
         return;
     }
-      
+
 
 
     //upvote channel passive effect
     var msgGuildSettings = getGuildInGuildList(guildSettings, message.guild.id);
-    var voteChannel = msgGuildSettings?.voteChannelsContains(message.channel);
+    var voteChannel = msgGuildSettings?.voteChannelsContains(message.channel as TextChannel);
     console.log(`Vote Channel = ${voteChannel}`);
     if (voteChannel != null) {
         console.log("This is a vote channel. Checking for attachments");
@@ -452,14 +452,13 @@ bot.on("message", async message => {
     /////////////////////////////////
     //Place CONFIG commands down here
     /////////////////////////////////
-    
 
-    if (new ConfigHandler().ingest(messageArray, message)){
+
+    if (new ConfigHandler().ingest(messageArray, message)) {
         return;
     }
 
-    if (cmd === `${tradPrefix}outConfig`)
-    {
+    if (cmd === `${tradPrefix}outConfig`) {
         if (args.length > 1) {
             message.channel.send("I'm sorry old sport, I didn't understand that.");
             return;
@@ -483,24 +482,28 @@ bot.on("message", async message => {
         if (args.length === 1) {
             switch (args[0]) {
                 default:
-                    return message.channel.send("Yeah its a pain to do a specific help dialog for each command I always get mad when things don't have this but deal.");
+                    message.channel.send("Yeah its a pain to do a specific help dialog for each command I always get mad when things don't have this but deal.");
+                    return;
             }
         }
         //help general
         else {
-            let helpembed: Embed = new Discord.Embed()
+            let helpembed: Embed = new Discord.EmbedBuilder()
                 .setDescription("Available Commands: (This list is incomplete and incorrect)")
                 .setColor("#CC7F3A")
-                .addField("!help", "Show this message")
-                .addField("!setBotConfig", "Designates a channel as the bot config channel. This is required to get server join/leave messages")
-                .addField("!setUpvote #channel [emoji]", "Designates a channel to be an upvote channel, where Jeeves reacts to every attachment with the specified emoji to start an upvote. Default is thumbs up")
-                .addField("!setDefaultName #channel [defaultChannelName]", "Sets the default name of a channel to the given value. If no value is given, it will set the default channel name to its current name. To be used with !revertChannelNames" )
-                .addField("!revertChannelNames", "Reverts all channel names with a default value to their default value. See !setDefaultName" )
-                .addField("!poll [question]", "Reacts to your question with a yes no and meh option for people to vote on. You can also specify custom options by placing emojis before the question, separated by spaces!")
-                .addField("Passive Commands", "This bot may also contain some passive triggers when it sees messages with certain words")
-                .addField("For More:", "visit https://github.com/armhandstudios/ScottBot");
+                .addFields(
+                    { name: "!help", value: "Show this message" },
+                    { name: "!setBotConfig", value: "Designates a channel as the bot config channel. This is required to get server join/leave messages" },
+                    { name: "!setUpvote #channel [emoji]", value: "Designates a channel to be an upvote channel, where Jeeves reacts to every attachment with the specified emoji to start an upvote. Default is thumbs up" },
+                    { name: "!setDefaultName #channel [defaultChannelName]", value: "Sets the default name of a channel to the given value. If no value is given, it will set the default channel name to its current name. To be used with !revertChannelNames" },
+                    { name: "!revertChannelNames", value: "Reverts all channel names with a default value to their default value. See !setDefaultName" },
+                    { name: "!poll [question]", value: "Reacts to your question with a yes no and meh option for people to vote on. You can also specify custom options by placing emojis before the question, separated by spaces!" },
+                    { name: "Passive Commands", value: "This bot may also contain some passive triggers when it sees messages with certain words" },
+                    { name: "For More:", value: "visit https://github.com/armhandstudios/ScottBot" }
+                );
 
-            return message.channel.send(helpembed)
+            message.channel.send({ embeds: [helpembed] });
+            return;
         }
     }
 
@@ -518,8 +521,8 @@ bot.on("message", async message => {
         //set color if necessary
         if (args.length > 1) {
             roleColor = args[1];
-            message.guild.createRole({ name: args[0], color: roleColor })
-                .then(() => message.channel.send(`${args[0]} role created.`))
+            message.guild.roles.create({ name: args[0], color: roleColor as ColorResolvable})
+                .then(() => { message.channel.send(`${args[0]} role created.`); })
                 .catch(error => {
                     message.channel.send("There was an error creating the role.");
                     console.log(error);
@@ -528,8 +531,8 @@ bot.on("message", async message => {
         }
 
         //just the rolename
-        message.guild.createRole({ name: args[0] })
-            .then(() => message.channel.send(`${args[0]} role created.`))
+        message.guild.roles.create({ name: args[0] })
+            .then(() => { message.channel.send(`${args[0]} role created.`); })
             .catch(error => {
                 message.channel.send("There was an error creating the role.");
                 console.log(error);
@@ -543,10 +546,10 @@ bot.on("message", async message => {
     //Reacts to a command with a thumbs up and thumbs down
     //TODO: Crashes if bot has permission to view a channel, but not permission to react in a channel
     if (cmd === `${tradPrefix}poll`) {
-        let reactionsList: (string|Emoji)[] = [];
+        let reactionsList: (string|EmojiIdentifierResolvable)[] = [];
         for (let reaction of args) {
             console.log("Parsing args for reactions; found ", reaction);
-            let emojiMatch = message.guild.emojis.find(emoji => emoji.toString() === reaction)
+            let emojiMatch = message.guild.emojis.cache.find(emoji => emoji.toString() === reaction)
             if(emojiMatch != undefined) {
                 console.log("Pushing custom emoji ", emojiMatch.name);
                 reactionsList.push(emojiMatch);

@@ -1,8 +1,7 @@
 /// <reference path="VoteChannel.ts" />
-
-import { Channel, channel } from "diagnostics_channel";
 import { ChannelDefaults } from "./ChannelDefaults";
 import { VoteChannel } from "./VoteChannel";
+import { BaseGuildTextChannel, TextChannel, BaseChannel } from "discord.js";
 
 export class GuildSettings {
     guildId: string;
@@ -22,11 +21,11 @@ export class GuildSettings {
         this.defaultChannelNames = _channelDefaults;
     }
 
-    voteChannelsContains(channel): VoteChannel | null {
+    voteChannelsContains(channel : TextChannel): VoteChannel | null {
         console.log(`voteChannelContains searching for ${channel}`);
         for (var voteChannel of this.VoteChannels) {
             console.log(`Testing against ${voteChannel.channel}`);
-            if (voteChannel.channel == channel) {
+            if (voteChannel.channel.slice(2, -1) == channel.id) {  //need the slice because it reads the value as <#dlfkgjdlg>, but is testing for dlkfjsldk
                 console.log(`voteChannelContains did contain. Returning voteChannel`);
                 return voteChannel;
             }

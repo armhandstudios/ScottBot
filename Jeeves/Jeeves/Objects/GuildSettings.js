@@ -1,5 +1,4 @@
 "use strict";
-/// <reference path="VoteChannel.ts" />
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GuildSettings = void 0;
 class GuildSettings {
@@ -17,7 +16,7 @@ class GuildSettings {
         console.log(`voteChannelContains searching for ${channel}`);
         for (var voteChannel of this.VoteChannels) {
             console.log(`Testing against ${voteChannel.channel}`);
-            if (voteChannel.channel == channel) {
+            if (voteChannel.channel.slice(2, -1) == channel.id) { //need the slice because it reads the value as <#dlfkgjdlg>, but is testing for dlkfjsldk
                 console.log(`voteChannelContains did contain. Returning voteChannel`);
                 return voteChannel;
             }
