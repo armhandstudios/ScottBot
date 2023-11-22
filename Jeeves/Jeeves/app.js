@@ -1,22 +1,21 @@
 "use strict";
-/// <reference path="Objects/GuildSettings.ts" />
-/// <reference path="Objects/VoteChannel.ts" />
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.exportGuildSettings = exports.guildSettings = void 0;
+process.stdout.write("Starting Jeeves");
+/// <reference path="Objects/GuildSettings.ts" />
+/// <reference path="Objects/VoteChannel.ts" />
+/// <reference path="ConfigHandlers/ConfigHandler.ts" />
+//Discord bot
+//The end goal of this project is to create a bot to moderate a server with useful features.
+const discord_js_1 = require("discord.js");
 const GuildSettings_1 = require("./Objects/GuildSettings");
 const VoteChannel_1 = require("./Objects/VoteChannel");
+const ConfigHandler_1 = require("./MessageHandlers/ConfigHandler");
 const guildSettings_json_1 = __importDefault(require("./guildSettings.json"));
+const RegexHandler_1 = require("./MessageHandlers/RegexHandler");
 //random todos:
 //wanna refactor out the whole cmd is the first word and args are the rest, just work with the whole word array rather than splitting it up
 //command to lock help commands to a specific channel. if i do this, then will need to track for channel changes to the server.
@@ -36,8 +35,12 @@ const botconfig = require("./botconfig.json");
 const Discord = require("discord.js");
 const fs = require("fs");
 const { Console } = require("console");
-const bot = new Discord.Client({});
-var guildSettings = [];
+const bot = new Discord.Client({
+    intents: [discord_js_1.GatewayIntentBits.Guilds, discord_js_1.GatewayIntentBits.GuildMembers, discord_js_1.GatewayIntentBits.GuildPresences, discord_js_1.GatewayIntentBits.GuildEmojisAndStickers,
+        discord_js_1.GatewayIntentBits.GuildMessages, discord_js_1.GatewayIntentBits.GuildMessageReactions,
+        discord_js_1.GatewayIntentBits.MessageContent]
+});
+exports.guildSettings = [];
 ///
 /// inGuildList: Checks if targetGuild is in the provided guildList
 ///
@@ -70,36 +73,53 @@ function exportGuildSettings(guildSettingsList) {
     var guildListJSON = JSON.stringify(guildSettingsList);
     fs.writeFile("guildSettings.json", guildListJSON, (err) => { if (err)
         console.log(`Error writing to guildListJSON: ${err}`); });
+    logConfig("exportGuildSettings");
+}
+exports.exportGuildSettings = exportGuildSettings;
+function logConfig(source) {
+    console.log("Logging config from ", source);
+    console.log("Guild Settings list:");
+    console.log("-------------------");
+    console.log(exports.guildSettings);
+    console.log("\nGuild Settings json:");
+    console.log("-------------------");
+    fs.readFile("./guildSettings.json", "utf8", (err, jsonString) => {
+        if (err) {
+            console.log("Couldn't read json; ", err);
+            return;
+        }
+        console.log(jsonString);
+    });
 }
 //occurs when bot hits "ready" state
-bot.on("ready", () => __awaiter(void 0, void 0, void 0, function* () {
+bot.on("ready", async () => {
     console.log(`${bot.user.username} is online!`);
-    bot.user.setActivity("Under Construction");
+    bot.user.setActivity("Try !poll 🤰 👌");
     //TODO: import guildSettings from JSON, then create ones that don't have settings yet
     //var text = fs.readFileSync("guildSettings.json");
     //var guildSettingsList: Array<GuildSettings> = guildSettingsJson;
     //console.log(`Printing guild settings list: ${guildSettingsList}`);
-    //if (guildSettingsList != null) {
-    for (var gs of guildSettings_json_1.default) {
-        console.log(`Printing gs: ${gs}: ${gs[0]}`);
-        var vcs = [];
-        for (var vc of gs.VoteChannels) {
-            console.log(`Building vote channels: Current vc: ${vc}, channel: ${vc.channel}, emoji: ${vc.emoji}`);
-            let newVc = new VoteChannel_1.VoteChannel(vc.channel, vc.emoji);
-            vcs.push(newVc);
+    if (guildSettings_json_1.default.length > 0) {
+        for (var gs of guildSettings_json_1.default) {
+            console.log(`Printing gs: ${gs}: ${gs[0]}`);
+            var vcs = [];
+            for (var vc of gs.VoteChannels) {
+                console.log(`Building vote channels: Current vc: ${vc}, channel: ${vc.channel}, emoji: ${vc.emoji}`);
+                let newVc = new VoteChannel_1.VoteChannel(vc.channel, vc.emoji);
+                vcs.push(newVc);
+            }
+            //may need to make this constructor
+            console.log(`Pushing existing guild (from json). id: ${gs.guildId}, vcs: ${vcs}`);
+            exports.guildSettings.push(new GuildSettings_1.GuildSettings(gs.guildId, gs.botConfigChannel, vcs));
         }
-        //may need to make this constructor
-        console.log(`Pushing existing guild (from json). id: ${gs.guildId}, vcs: ${vcs}`);
-        guildSettings.push(new GuildSettings_1.GuildSettings(gs.guildId, gs.botConfigChannel, vcs));
     }
-    //}
-    bot.guilds.map(guild => {
-        if (!inGuildList(guildSettings, guild)) {
+    bot.guilds.fetch().then(guilds => guilds.each(guild => {
+        if (!inGuildList(exports.guildSettings, guild)) {
             console.log("Pushing new guild (not json)");
-            guildSettings.push(new GuildSettings_1.GuildSettings(guild.id));
+            exports.guildSettings.push(new GuildSettings_1.GuildSettings(guild.id));
         }
-    });
-    exportGuildSettings(guildSettings);
+    }));
+    exportGuildSettings(exports.guildSettings);
     //need to generalize this action beyond just my server. Additionally, it should save this if it goes offline, rather than initialize it every startup.
     //var membersWithRole = bot.guilds.get("263039543048011778").members.filter(member => { return member.roles.find("name", "Trontestant")}).map(member =>
     //    {
@@ -107,28 +127,28 @@ bot.on("ready", () => __awaiter(void 0, void 0, void 0, function* () {
     //        playersList.push(new CharacterSheet(member.user.username));
     //        console.log(playersList);
     //    });
-}));
+});
 //should make these commands send embeds
 //when a user joins
 bot.on("guildMemberAdd", member => {
     console.log(`In Guild Member Add, target guild id = ${member.guild.id}`);
-    var memberGuild = getGuildInGuildList(guildSettings, member.guild.id);
+    var memberGuild = getGuildInGuildList(exports.guildSettings, member.guild.id);
     if (memberGuild == null)
         return;
     if (memberGuild.botConfigChannel != null) {
         console.log("New member, bot config channel set");
-        member.guild.channels.get(memberGuild.botConfigChannel).send(`Welcome, ${member}. Ohio!`);
+        member.guild.channels.fetch(memberGuild.botConfigChannel).then(fetched => fetched.send(`Welcome, ${member}. Ohio!`));
     }
 });
 //when a user leaves
 bot.on("guildMemberRemove", member => {
     console.log(`In Guild Member Add, target guild id = ${member.guild.id}`);
-    var memberGuild = getGuildInGuildList(guildSettings, member.guild.id);
+    var memberGuild = getGuildInGuildList(exports.guildSettings, member.guild.id);
     if (memberGuild == null)
         return;
     if (memberGuild.botConfigChannel != null) {
         console.log("Ex member, bot config channel set");
-        member.guild.channels.get(memberGuild.botConfigChannel).send(`${member} (${member.displayName}) left. We'll come back for you!!`);
+        member.guild.channels.fetch(memberGuild.botConfigChannel).then(fetched => fetched.send(`${member} (${member.displayName}) left. We'll come back for you!!`));
     }
 });
 bot.on("presenceUpdate", (oldMember, newMember) => {
@@ -153,8 +173,7 @@ bot.on("presenceUpdate", (oldMember, newMember) => {
     //   }
 });
 //when the bot gets a message notification
-bot.on("message", (message) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+bot.on(discord_js_1.Events.MessageCreate, async (message) => {
     console.log("----------------------------------------");
     //don't respond to bots
     if (message.author.bot)
@@ -169,7 +188,7 @@ bot.on("message", (message) => __awaiter(void 0, void 0, void 0, function* () {
     //////////////////////
     //Put DM commands here
     //////////////////////
-    if (message.channel.type === "dm") {
+    if (message.channel.type.toString().toLowerCase() === "dm") {
         //Need to generalize this process for multiple servers. May move it out of DMs and into a specific channel, bu i think dms is good
         //if(cmd == "addq")
         //{
@@ -339,35 +358,12 @@ bot.on("message", (message) => __awaiter(void 0, void 0, void 0, function* () {
     ///////////////////////////
     //Put PASSIVE commands here
     ///////////////////////////
-    //smultimash
-    for (let word in messageArray) //why the hecc does word give an index and not a word javascript is dumb {answered: gotta do for/of, not for/in}
-     {
-        if (/^sm.*u.*sh/i.test(messageArray[word])) {
-            console.log("Fixing smush");
-            message.channel.send("Looks like you made a typo. Lemme take care of that for you :)");
-            message.delete().catch(O_o => { console.log("Couldn't delete?"); });
-            //Todo: Send an embed saying "person x says: message but smush is replaced"
-        }
-    }
-    if (/s.ot.?.*w.?oz.*/i.test(message.content.toLowerCase())) {
-        console.log("How dare you say that name in this server");
-        message.delete().catch(O_o => { console.log("Couldn't delete?"); });
-    }
-    //stonks
-    for (let word of messageArray) //why the hecc does word give an index and not a word javascript is dumb {answered: gotta do for/of, not for/in}
-     {
-        if (word.toLowerCase() == "stocks") {
-            message.channel.send("*Stonks");
-            return;
-        }
-        if (word.toLowerCase() == "stock") {
-            message.channel.send("*Stonk");
-            return;
-        }
+    if (new RegexHandler_1.RegexHandler().ingest(messageArray, message)) {
+        return;
     }
     //upvote channel passive effect
-    var msgGuildSettings = getGuildInGuildList(guildSettings, message.guild.id);
-    var voteChannel = msgGuildSettings === null || msgGuildSettings === void 0 ? void 0 : msgGuildSettings.voteChannelsContains(message.channel);
+    var msgGuildSettings = getGuildInGuildList(exports.guildSettings, message.guild.id);
+    var voteChannel = msgGuildSettings?.voteChannelsContains(message.channel);
     console.log(`Vote Channel = ${voteChannel}`);
     if (voteChannel != null) {
         console.log("This is a vote channel. Checking for attachments");
@@ -407,43 +403,15 @@ bot.on("message", (message) => __awaiter(void 0, void 0, void 0, function* () {
     /////////////////////////////////
     //Place CONFIG commands down here
     /////////////////////////////////
-    if (cmd === `${tradPrefix}setUpvote`) {
-        if (args.length < 1 || args.length > 2) {
-            message.channel.send("I'm sorry old sport, I didn't understand that.");
-            return;
-        }
-        var emoji;
-        if (args.length == 2) {
-            emoji = args[1];
-        }
-        else {
-            emoji = '👍';
-        }
-        var upvoteChannel = new VoteChannel_1.VoteChannel(args[0], emoji);
-        console.log(upvoteChannel);
-        (_a = guildSettings.find(guildSetting => guildSetting.guildId === message.guild.id)) === null || _a === void 0 ? void 0 : _a.SetVoteChannel(upvoteChannel);
-        exportGuildSettings(guildSettings);
+    if (new ConfigHandler_1.ConfigHandler().ingest(messageArray, message)) {
+        return;
     }
-    if (cmd === `${tradPrefix}setBotConfig`) {
+    if (cmd === `${tradPrefix}outConfig`) {
         if (args.length > 1) {
             message.channel.send("I'm sorry old sport, I didn't understand that.");
             return;
         }
-        var configChannel = undefined;
-        console.log("Setting config channel");
-        if (args.length == 1) {
-            configChannel = args[0];
-            console.log(`Config Channel = ${configChannel}`);
-        }
-        else {
-            configChannel = message.channel.id;
-            console.log(`Config Channel = ${configChannel}`);
-        }
-        if (configChannel != undefined) {
-            console.log("Executing SetConfigChannel");
-            (_b = guildSettings.find(guildSetting => guildSetting.guildId === message.guild.id)) === null || _b === void 0 ? void 0 : _b.SetConfigChannel(configChannel);
-        }
-        exportGuildSettings(guildSettings);
+        logConfig("outConfig command");
     }
     //////////////////////////////////////
     //Place TRADITIONAL commands down here
@@ -459,21 +427,18 @@ bot.on("message", (message) => __awaiter(void 0, void 0, void 0, function* () {
         if (args.length === 1) {
             switch (args[0]) {
                 default:
-                    return message.channel.send("Yeah its a pain to do a specific help dialog for each command I always get mad when things don't have this but deal.");
+                    message.channel.send("Yeah its a pain to do a specific help dialog for each command I always get mad when things don't have this but deal.");
+                    return;
             }
         }
         //help general
         else {
-            let helpembed = new Discord.RichEmbed()
+            let helpembed = new Discord.EmbedBuilder()
                 .setDescription("Available Commands: (This list is incomplete and incorrect)")
                 .setColor("#CC7F3A")
-                .addField("!help", "Show this message")
-                .addField("!setBotConfig", "Designates a channel as the bot config channel. This is required to get server join/leave messages")
-                .addField("!setUpvote #channel [emoji]", "Designates a channel to be an upvote channel, where Jeeves reacts to every attachment with the specified emoji to start an upvote. Default is thumbs up")
-                .addField("!poll [question]", "Reacts to your question with a yes no and meh option for people to vote on")
-                .addField("Passive Commands", "This bot may also contain some passive triggers when it sees messages with certain words")
-                .addField("For More:", "visit https://github.com/armhandstudios/ScottBot");
-            return message.channel.send(helpembed);
+                .addFields({ name: "!help", value: "Show this message" }, { name: "!setBotConfig", value: "Designates a channel as the bot config channel. This is required to get server join/leave messages" }, { name: "!setUpvote #channel [emoji]", value: "Designates a channel to be an upvote channel, where Jeeves reacts to every attachment with the specified emoji to start an upvote. Default is thumbs up" }, { name: "!setDefaultName #channel [defaultChannelName]", value: "Sets the default name of a channel to the given value. If no value is given, it will set the default channel name to its current name. To be used with !revertChannelNames" }, { name: "!revertChannelNames", value: "Reverts all channel names with a default value to their default value. See !setDefaultName" }, { name: "!poll [question]", value: "Reacts to your question with a yes no and meh option for people to vote on. You can also specify custom options by placing emojis before the question, separated by spaces!" }, { name: "Passive Commands", value: "This bot may also contain some passive triggers when it sees messages with certain words" }, { name: "For More:", value: "visit https://github.com/armhandstudios/ScottBot" });
+            message.channel.send({ embeds: [helpembed] });
+            return;
         }
     }
     //addrole [name] [color]
@@ -489,8 +454,8 @@ bot.on("message", (message) => __awaiter(void 0, void 0, void 0, function* () {
         //set color if necessary
         if (args.length > 1) {
             roleColor = args[1];
-            message.guild.createRole({ name: args[0], color: roleColor })
-                .then(() => message.channel.send(`${args[0]} role created.`))
+            message.guild.roles.create({ name: args[0], color: roleColor })
+                .then(() => { message.channel.send(`${args[0]} role created.`); })
                 .catch(error => {
                 message.channel.send("There was an error creating the role.");
                 console.log(error);
@@ -498,8 +463,8 @@ bot.on("message", (message) => __awaiter(void 0, void 0, void 0, function* () {
             return;
         }
         //just the rolename
-        message.guild.createRole({ name: args[0] })
-            .then(() => message.channel.send(`${args[0]} role created.`))
+        message.guild.roles.create({ name: args[0] })
+            .then(() => { message.channel.send(`${args[0]} role created.`); })
             .catch(error => {
             message.channel.send("There was an error creating the role.");
             console.log(error);
@@ -510,8 +475,43 @@ bot.on("message", (message) => __awaiter(void 0, void 0, void 0, function* () {
     //Leaving this as a todo. need to make sure it only deletes ones its created. prolly gonna have to leave this til its ready to go live.
     //poll
     //Reacts to a command with a thumbs up and thumbs down
+    //TODO: Crashes if bot has permission to view a channel, but not permission to react in a channel
     if (cmd === `${tradPrefix}poll`) {
-        message.react('👍').then(() => message.react('🤷')).then(() => message.react('👎')).catch();
+        let reactionsList = [];
+        for (let reaction of args) {
+            console.log("Parsing args for reactions; found ", reaction);
+            let emojiMatch = message.guild.emojis.cache.find(emoji => emoji.toString() === reaction);
+            if (emojiMatch != undefined) {
+                console.log("Pushing custom emoji ", emojiMatch.name);
+                reactionsList.push(emojiMatch);
+            }
+            else {
+                if (/\p{Emoji}/u.test(reaction)) {
+                    console.log("Pushing non custom emoji ", reaction);
+                    reactionsList.push(reaction);
+                }
+                else {
+                    console.log("Found non-emoji; breaking. ", reaction);
+                    break;
+                }
+            }
+            ;
+        }
+        if (reactionsList.length == 0) {
+            message.react('👍').then(() => message.react('🤷')).then(() => message.react('👎')).catch();
+        }
+        else {
+            let chain = undefined;
+            for (let reaction of reactionsList) {
+                if (chain == undefined) {
+                    chain = message.react(reaction);
+                }
+                else {
+                    chain = chain.then(() => message.react(reaction));
+                }
+            }
+            chain.catch();
+        }
     }
     //Secret Santa
     //secretSanta start [Description]: Starts the secret santa event. Can only be started by a Mod?.
@@ -707,7 +707,7 @@ bot.on("message", (message) => __awaiter(void 0, void 0, void 0, function* () {
             }
         }
     }
-}));
+});
 if (token() == null) {
     console.log("using environment var");
     bot.login(process.env.discordToken);
@@ -716,4 +716,12 @@ else {
     console.log(token());
     bot.login(token().token);
 }
+process.on("uncaughtException", (reason, p) => {
+    console.error(reason, "Uncaught Exception at Promise", p);
+    process.exit(1);
+});
+process.on("unhandledRejection", (reason, p) => {
+    console.error(reason, "Unhandled Rejection at Promise", p);
+    process.exit(1);
+});
 //# sourceMappingURL=app.js.map
