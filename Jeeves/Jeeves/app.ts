@@ -8,7 +8,7 @@
 //Discord bot
 //The end goal of this project is to create a bot to moderate a server with useful features.
 
-import { Client, DiscordAPIError, Emoji, Guild, MessageReaction, Embed, TextChannel, BaseGuildTextChannel, BaseGuild } from "discord.js";
+import { Client, GatewayIntentBits, DiscordAPIError, Emoji, Guild, MessageReaction, Embed, TextChannel, BaseGuildTextChannel, BaseGuild, IntentsBitField } from "discord.js";
 import { GuildSettings } from "./Objects/GuildSettings";
 import { VoteChannel } from "./Objects/VoteChannel";
 import { ConfigHandler } from "./MessageHandlers/ConfigHandler";
@@ -36,7 +36,11 @@ const Discord = require("discord.js");
 const fs = require("fs");
 const { Console } = require("console");
 
-const bot: Client = new Discord.Client({});
+const bot: Client = new Discord.Client({
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildEmojisAndStickers,
+        GatewayIntentBits.GuildMembers, GatewayIntentBits.DirectMessages, GatewayIntentBits.DirectMessages, GatewayIntentBits.GuildMessageReactions,
+        GatewayIntentBits.MessageContent]
+});
 
 export var guildSettings: Array<GuildSettings> = []; 
 

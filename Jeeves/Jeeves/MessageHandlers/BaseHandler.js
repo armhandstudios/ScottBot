@@ -1,14 +1,14 @@
 "use strict";
 ///<reference path="../botconfig.json"/>
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.BaseHandler = void 0;
-var botconfig = require("../botconfig.json");
-var BaseHandler = /** @class */ (function () {
-    function BaseHandler() {
+const botconfig = require("../botconfig.json");
+class BaseHandler {
+    constructor() {
         this.tradPrefix = botconfig.tradPrefix; //traditional command prefix
         this.casPrefix = botconfig.casPrefix; //casual command prefix
         this.casQualifier = botconfig.casQualifier;
     }
-    return BaseHandler;
-}());
+}
 exports.BaseHandler = BaseHandler;
+//# sourceMappingURL=BaseHandler.js.map

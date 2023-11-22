@@ -5,6 +5,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.exportGuildSettings = exports.guildSettings = void 0;
 process.stdout.write("Starting Jeeves");
+/// <reference path="Objects/GuildSettings.ts" />
+/// <reference path="Objects/VoteChannel.ts" />
+/// <reference path="ConfigHandlers/ConfigHandler.ts" />
+//Discord bot
+//The end goal of this project is to create a bot to moderate a server with useful features.
+const discord_js_1 = require("discord.js");
 const GuildSettings_1 = require("./Objects/GuildSettings");
 const VoteChannel_1 = require("./Objects/VoteChannel");
 const ConfigHandler_1 = require("./MessageHandlers/ConfigHandler");
@@ -29,7 +35,11 @@ const botconfig = require("./botconfig.json");
 const Discord = require("discord.js");
 const fs = require("fs");
 const { Console } = require("console");
-const bot = new Discord.Client({});
+const bot = new Discord.Client({
+    intents: [discord_js_1.GatewayIntentBits.Guilds, discord_js_1.GatewayIntentBits.GuildMembers, discord_js_1.GatewayIntentBits.GuildPresences, discord_js_1.GatewayIntentBits.GuildEmojisAndStickers,
+        discord_js_1.GatewayIntentBits.GuildMembers, discord_js_1.GatewayIntentBits.DirectMessages, discord_js_1.GatewayIntentBits.DirectMessages, discord_js_1.GatewayIntentBits.GuildMessageReactions,
+        discord_js_1.GatewayIntentBits.MessageContent]
+});
 exports.guildSettings = [];
 ///
 /// inGuildList: Checks if targetGuild is in the provided guildList

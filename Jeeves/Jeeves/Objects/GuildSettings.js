@@ -1,43 +1,54 @@
 "use strict";
 /// <reference path="VoteChannel.ts" />
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.GuildSettings = void 0;
-var GuildSettings = /** @class */ (function () {
-    function GuildSettings(_guildId, _botConfigChannel, _voteChannels) {
-        if (_voteChannels === void 0) { _voteChannels = []; }
-        console.log("Adding guild w id ".concat(_guildId));
+class GuildSettings {
+    constructor(_guildId, _botConfigChannel, _voteChannels = [], _channelDefaults = []) {
+        console.log(`Adding guild w id ${_guildId}`);
         this.guildId = _guildId;
         this.botConfigChannel = _botConfigChannel;
         this.VoteChannels = [];
-        for (var _i = 0, _voteChannels_1 = _voteChannels; _i < _voteChannels_1.length; _i++) {
-            var vc = _voteChannels_1[_i];
-            this.VoteChannels.push(vc);
+        for (var vc of _voteChannels) {
+            this.VoteChannels.push(vc); //why am I doing it this way??
         }
+        this.defaultChannelNames = _channelDefaults;
     }
-    GuildSettings.prototype.voteChannelsContains = function (channel) {
-        console.log("voteChannelContains searching for ".concat(channel));
-        for (var _i = 0, _a = this.VoteChannels; _i < _a.length; _i++) {
-            var voteChannel = _a[_i];
-            console.log("Testing against ".concat(voteChannel.channel));
+    voteChannelsContains(channel) {
+        console.log(`voteChannelContains searching for ${channel}`);
+        for (var voteChannel of this.VoteChannels) {
+            console.log(`Testing against ${voteChannel.channel}`);
             if (voteChannel.channel == channel) {
-                console.log("voteChannelContains did contain. Returning voteChannel");
+                console.log(`voteChannelContains did contain. Returning voteChannel`);
                 return voteChannel;
             }
         }
-        console.log("voteChannelContains did not contain. Returning null");
+        console.log(`voteChannelContains did not contain. Returning null`);
         return null;
-    };
-    GuildSettings.prototype.SetVoteChannel = function (voteChannel) {
+    }
+    SetVoteChannel(voteChannel) {
         var _voteChannel = this.voteChannelsContains(voteChannel.channel);
         if (_voteChannel != null) {
             _voteChannel.emoji = voteChannel.emoji;
             return;
         }
         this.VoteChannels.push(voteChannel);
-    };
-    GuildSettings.prototype.SetConfigChannel = function (configChannel) {
+    }
+    channelDefaultsContains(channelDefault) {
+        for (var dcn of this.defaultChannelNames) {
+            if (channelDefault.channel === dcn.channel) {
+                return true;
+            }
+        }
+        return false;
+    }
+    AddChannelDefault(channelDefault) {
+        if (!this.channelDefaultsContains(channelDefault)) {
+            this.defaultChannelNames.push(channelDefault);
+        }
+    }
+    SetConfigChannel(configChannel) {
         this.botConfigChannel = configChannel;
-    };
-    return GuildSettings;
-}());
+    }
+}
 exports.GuildSettings = GuildSettings;
+//# sourceMappingURL=GuildSettings.js.map
