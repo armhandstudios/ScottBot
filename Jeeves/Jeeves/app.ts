@@ -408,7 +408,7 @@ bot.on(Events.MessageCreate, async message => {
 
     //upvote channel passive effect
     var msgGuildSettings = getGuildInGuildList(guildSettings, message.guild.id);
-    var voteChannel = msgGuildSettings?.voteChannelsContains(message.channel as TextChannel);
+    var voteChannel = msgGuildSettings?.voteChannelsContains(message.channel.id);
     console.log(`Vote Channel = ${voteChannel}`);
     if (voteChannel != null) {
         console.log("This is a vote channel. Checking for attachments");
