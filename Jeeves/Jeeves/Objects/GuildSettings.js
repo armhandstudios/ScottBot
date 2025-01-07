@@ -15,8 +15,8 @@ class GuildSettings {
     voteChannelsContains(channel) {
         console.log(`voteChannelContains searching for ${channel}`);
         for (var voteChannel of this.VoteChannels) {
-            console.log(`Testing against ${voteChannel.channel}`);
-            if (voteChannel.channel.slice(2, -1) == channel.id) { //need the slice because it reads the value as <#dlfkgjdlg>, but is testing for dlkfjsldk
+            console.log(`Testing ${channel} against ${voteChannel.channel.slice(2, -1)}`);
+            if (voteChannel.channel.slice(2, -1) === channel) { //need the slice because it reads the value as <#dlfkgjdlg>, but is testing for dlkfjsldk
                 console.log(`voteChannelContains did contain. Returning voteChannel`);
                 return voteChannel;
             }
@@ -25,12 +25,15 @@ class GuildSettings {
         return null;
     }
     SetVoteChannel(voteChannel) {
+        console.log(`In SetVoteChannel`);
         var _voteChannel = this.voteChannelsContains(voteChannel.channel);
         if (_voteChannel != null) {
+            console.log(`overwriting emoji for voteChannel ${voteChannel.channel}`);
             _voteChannel.emoji = voteChannel.emoji;
             return;
         }
         this.VoteChannels.push(voteChannel);
+        console.log(`leaving setvotechannel`);
     }
     channelDefaultsContains(channelDefault) {
         for (var dcn of this.defaultChannelNames) {
