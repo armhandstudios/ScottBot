@@ -104,12 +104,16 @@ class ConfigHandler extends BaseHandler_1.BaseHandler {
         if (gs == undefined) {
             return;
         }
-        for (var channelDefault of gs.defaultChannelNames) {
-            var clippedSnowflake = channelDefault.channel.slice(2, -1);
-            message.guild.channels.fetch(clippedSnowflake) //channel being saved as <#sldkfjslkj>, its looking for the slkdfjsldkfh
-                .then(channel => channel.setName(channelDefault.defaultName, "Jeeves !revert command"))
-                .catch(err => console.log(err));
+        var defaultNames = gs.defaultChannelNames;
+        for (var i = 0; i < defaultNames.length; i++) {
+            var clippedSnowflake = defaultNames[i].channel.slice(2, -1);
+            this.ChannelNamePromise(message, clippedSnowflake, defaultNames[i]);
         }
+    }
+    ChannelNamePromise(message, clippedSnowflake, defaults) {
+        message.guild.channels.fetch(clippedSnowflake) //channel being saved as <#sldkfjslkj>, its looking for the slkdfjsldkfh
+            .then(channel => channel.setName(defaults.defaultName, "Jeeves !revert command"))
+            .catch(err => console.log(err));
     }
 }
 exports.ConfigHandler = ConfigHandler;

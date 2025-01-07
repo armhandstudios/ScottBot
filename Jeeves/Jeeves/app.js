@@ -16,6 +16,7 @@ const VoteChannel_1 = require("./Objects/VoteChannel");
 const ConfigHandler_1 = require("./MessageHandlers/ConfigHandler");
 const guildSettings_json_1 = __importDefault(require("./guildSettings.json"));
 const RegexHandler_1 = require("./MessageHandlers/RegexHandler");
+const ChannelDefaults_1 = require("./Objects/ChannelDefaults");
 //random todos:
 //wanna refactor out the whole cmd is the first word and args are the rest, just work with the whole word array rather than splitting it up
 //command to lock help commands to a specific channel. if i do this, then will need to track for channel changes to the server.
@@ -103,10 +104,15 @@ bot.on("ready", async () => {
         for (var gs of guildSettings_json_1.default) {
             console.log(`Printing gs: ${gs}: ${gs[0]}`);
             var vcs = [];
+            var chdefs = [];
             for (var vc of gs.VoteChannels) {
                 console.log(`Building vote channels: Current vc: ${vc}, channel: ${vc.channel}, emoji: ${vc.emoji}`);
                 let newVc = new VoteChannel_1.VoteChannel(vc.channel, vc.emoji);
                 vcs.push(newVc);
+            }
+            for (var cd of gs.defaultChannelNames) {
+                console.log(`Building Channel Defaults: Current chdef: ${cd}, channel: ${cd.channel}, defaultName: ${cd.defaultName}`);
+                let newCd = new ChannelDefaults_1.ChannelDefaults(cd.channel, cd.defaultName);
             }
             //may need to make this constructor
             console.log(`Pushing existing guild (from json). id: ${gs.guildId}, vcs: ${vcs}`);
@@ -182,6 +188,7 @@ bot.on(discord_js_1.Events.MessageCreate, async (message) => {
     let casPrefix = botconfig.casPrefix; //casual command prefix
     let casQualifier = botconfig.casQualifier; //casual command prefix is 2 words, this will be a second check.
     let messageArray = message.content.split(" ");
+    let msgGuildSettings = getGuildInGuildList(exports.guildSettings, message.guild.id);
     //split the message into words
     let cmd = messageArray[0];
     let args = messageArray.slice(1);
@@ -362,7 +369,6 @@ bot.on(discord_js_1.Events.MessageCreate, async (message) => {
         return;
     }
     //upvote channel passive effect
-    var msgGuildSettings = getGuildInGuildList(exports.guildSettings, message.guild.id);
     var voteChannel = msgGuildSettings?.voteChannelsContains(message.channel.id);
     console.log(`Vote Channel = ${voteChannel}`);
     if (voteChannel != null) {
@@ -436,10 +442,16 @@ bot.on(discord_js_1.Events.MessageCreate, async (message) => {
             let helpembed = new Discord.EmbedBuilder()
                 .setDescription("Available Commands: (This list is incomplete and incorrect)")
                 .setColor("#CC7F3A")
-                .addFields({ name: "!help", value: "Show this message" }, { name: "!setBotConfig", value: "Designates a channel as the bot config channel. This is required to get server join/leave messages" }, { name: "!setUpvote #channel [emoji]", value: "Designates a channel to be an upvote channel, where Jeeves reacts to every attachment with the specified emoji to start an upvote. Default is thumbs up" }, { name: "!setDefaultName #channel [defaultChannelName]", value: "Sets the default name of a channel to the given value. If no value is given, it will set the default channel name to its current name. To be used with !revertChannelNames" }, { name: "!revertChannelNames", value: "Reverts all channel names with a default value to their default value. See !setDefaultName" }, { name: "!poll [question]", value: "Reacts to your question with a yes no and meh option for people to vote on. You can also specify custom options by placing emojis before the question, separated by spaces!" }, { name: "Passive Commands", value: "This bot may also contain some passive triggers when it sees messages with certain words" }, { name: "For More:", value: "visit https://github.com/armhandstudios/ScottBot" });
+                .addFields({ name: "!help", value: "Show this message" }, { name: "!setBotConfig", value: "Designates a channel as the bot config channel. This is required to get server join/leave messages" }, { name: "!setUpvote #channel [emoji]", value: "Designates a channel to be an upvote channel, where Jeeves reacts to every attachment with the specified emoji to start an upvote. Default is thumbs up" }, { name: "!setDefaultName #channel [defaultChannelName]", value: "Sets the default name of a channel to the given value. If no value is given, it will set the default channel name to its current name. To be used with !revertChannelNames" }, { name: "!revertChannelNames", value: "Reverts all channel names with a default value to their default value. See !setDefaultName" }, { name: "!poll [question]", value: "Reacts to your question with a yes no and meh option for people to vote on. You can also specify custom options by placing emojis before the question, separated by spaces!" }, { name: "!getServerConfig", value: "Prints a json object containing the configuration for the current server. May be confusing!" }, { name: "Passive Commands", value: "This bot may also contain some passive triggers when it sees messages with certain words" }, { name: "For More:", value: "visit https://github.com/armhandstudios/ScottBot" });
             message.channel.send({ embeds: [helpembed] });
             return;
         }
+    }
+    //getGuildSettings
+    if (cmd == `${tradPrefix}getServerConfig`) {
+        console.log(`"Printing server config for ${message.guild.id}`);
+        message.channel.send(JSON.stringify(msgGuildSettings));
+        return;
     }
     //addrole [name] [color]
     //fuuuuuuuck ok theres error handling but these trash methods don't seem to throw errors

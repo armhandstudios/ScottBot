@@ -14,6 +14,7 @@ import { VoteChannel } from "./Objects/VoteChannel";
 import { ConfigHandler } from "./MessageHandlers/ConfigHandler";
 import guildSettingsJson from "./guildSettings.json";
 import { RegexHandler } from "./MessageHandlers/RegexHandler";
+import { ChannelDefaults } from "./Objects/ChannelDefaults";
 
 //random todos:
 //wanna refactor out the whole cmd is the first word and args are the rest, just work with the whole word array rather than splitting it up
@@ -110,10 +111,15 @@ bot.on("ready", async () => {
         for (var gs of guildSettingsJson) {
             console.log(`Printing gs: ${gs}: ${gs[0]}`);
             var vcs: Array<VoteChannel> = [];
+            var chdefs: Array<ChannelDefaults> = [];
             for (var vc of gs.VoteChannels) {
                 console.log(`Building vote channels: Current vc: ${vc}, channel: ${vc.channel}, emoji: ${vc.emoji}`);
                 let newVc: VoteChannel = new VoteChannel(vc.channel, vc.emoji)
                 vcs.push(newVc);
+            }
+            for (var cd of gs.defaultChannelNames) {
+                console.log(`Building Channel Defaults: Current chdef: ${cd}, channel: ${cd.channel}, defaultName: ${cd.defaultName}`);
+                let newCd: ChannelDefaults = new ChannelDefaults(cd.channel, cd.defaultName)
             }
 
             //may need to make this constructor
@@ -199,6 +205,7 @@ bot.on(Events.MessageCreate, async message => {
     let casPrefix: string = botconfig.casPrefix;        //casual command prefix
     let casQualifier: string = botconfig.casQualifier   //casual command prefix is 2 words, this will be a second check.
     let messageArray = message.content.split(" ");
+    let msgGuildSettings = getGuildInGuildList(guildSettings, message.guild.id);
 
     //split the message into words
     let cmd = messageArray[0];
@@ -407,7 +414,6 @@ bot.on(Events.MessageCreate, async message => {
 
 
     //upvote channel passive effect
-    var msgGuildSettings = getGuildInGuildList(guildSettings, message.guild.id);
     var voteChannel = msgGuildSettings?.voteChannelsContains(message.channel.id);
     console.log(`Vote Channel = ${voteChannel}`);
     if (voteChannel != null) {
@@ -498,6 +504,7 @@ bot.on(Events.MessageCreate, async message => {
                     { name: "!setDefaultName #channel [defaultChannelName]", value: "Sets the default name of a channel to the given value. If no value is given, it will set the default channel name to its current name. To be used with !revertChannelNames" },
                     { name: "!revertChannelNames", value: "Reverts all channel names with a default value to their default value. See !setDefaultName" },
                     { name: "!poll [question]", value: "Reacts to your question with a yes no and meh option for people to vote on. You can also specify custom options by placing emojis before the question, separated by spaces!" },
+                    { name: "!getServerConfig", value: "Prints a json object containing the configuration for the current server. May be confusing!"},
                     { name: "Passive Commands", value: "This bot may also contain some passive triggers when it sees messages with certain words" },
                     { name: "For More:", value: "visit https://github.com/armhandstudios/ScottBot" }
                 );
@@ -505,6 +512,13 @@ bot.on(Events.MessageCreate, async message => {
             message.channel.send({ embeds: [helpembed] });
             return;
         }
+    }
+
+    //getGuildSettings
+    if (cmd == `${tradPrefix}getServerConfig`) {
+        console.log(`"Printing server config for ${message.guild.id}`);
+        message.channel.send(JSON.stringify(msgGuildSettings));
+        return;
     }
 
     //addrole [name] [color]

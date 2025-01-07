@@ -119,11 +119,17 @@ export class ConfigHandler extends BaseHandler {
             return;
         }
 
-        for (var channelDefault of gs.defaultChannelNames) {
-            var clippedSnowflake: string = channelDefault.channel.slice(2, -1);
-            message.guild.channels.fetch(clippedSnowflake) //channel being saved as <#sldkfjslkj>, its looking for the slkdfjsldkfh
-                .then(channel => (channel as BaseGuildTextChannel).setName(channelDefault.defaultName, "Jeeves !revert command"))
-                .catch(err => console.log(err));
+        var defaultNames = gs.defaultChannelNames
+
+        for (var i = 0; i < defaultNames.length; i++) {
+            var clippedSnowflake: string = defaultNames[i].channel.slice(2, -1);
+            this.ChannelNamePromise(message, clippedSnowflake, defaultNames[i]);
         }
+    }
+
+    ChannelNamePromise(message: Message, clippedSnowflake: string, defaults: ChannelDefaults) {
+        message.guild.channels.fetch(clippedSnowflake) //channel being saved as <#sldkfjslkj>, its looking for the slkdfjsldkfh
+            .then(channel => (channel as BaseGuildTextChannel).setName(defaults.defaultName, "Jeeves !revert command"))
+            .catch(err => console.log(err));
     }
 }
