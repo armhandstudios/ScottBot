@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RegexHandler = void 0;
 const BaseHandler_1 = require("./BaseHandler");
+const botconfig = require("../botconfig.json");
 class RegexHandler extends BaseHandler_1.BaseHandler {
     //return true if no further parsing needs to be done on message (in this case, if the message is deleted)
     ingest(messageArray, message) {
@@ -15,7 +16,9 @@ class RegexHandler extends BaseHandler_1.BaseHandler {
         //Remember: for/of gives a string, for/in gives an index
         for (let word of messageArray) {
             this.checkStock(word, message);
-            ret = ret || this.checkSmultimash(word, message);
+            if (botconfig.deleteSmush) {
+                ret = ret || this.checkSmultimash(word, message);
+            }
         }
         return ret;
     }

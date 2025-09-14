@@ -1,6 +1,6 @@
 import { Message } from "discord.js";
 import { BaseHandler } from "./BaseHandler";
-
+const botconfig = require("../botconfig.json");
 
 export class RegexHandler extends BaseHandler {
 
@@ -18,7 +18,9 @@ export class RegexHandler extends BaseHandler {
         //Remember: for/of gives a string, for/in gives an index
         for (let word of messageArray) { 
             this.checkStock(word, message);
-            ret = ret || this.checkSmultimash(word, message);
+            if (botconfig.deleteSmush) {
+                ret = ret || this.checkSmultimash(word, message);
+            }
 
         }
         return ret;
