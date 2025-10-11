@@ -43,7 +43,8 @@ var reactionResponses;
 const bot = new Discord.Client({
     intents: [discord_js_1.GatewayIntentBits.Guilds, discord_js_1.GatewayIntentBits.GuildMembers, discord_js_1.GatewayIntentBits.GuildPresences, discord_js_1.GatewayIntentBits.GuildEmojisAndStickers,
         discord_js_1.GatewayIntentBits.GuildMessages, discord_js_1.GatewayIntentBits.GuildMessageReactions,
-        discord_js_1.GatewayIntentBits.MessageContent]
+        discord_js_1.GatewayIntentBits.MessageContent, discord_js_1.GatewayIntentBits.DirectMessages],
+    partials: [discord_js_1.Partials.Channel, discord_js_1.Partials.Message]
 });
 exports.guildSettings = [];
 exports.roleColorList = ["White", "Aqua", "Green", "Blue", "Yellow", "Purple", "LuminousVividPink", "Fuchsia", "Gold",
@@ -224,7 +225,9 @@ bot.on(discord_js_1.Events.MessageCreate, async (message) => {
     let casPrefix = botconfig.casPrefix; //casual command prefix
     let casQualifier = botconfig.casQualifier; //casual command prefix is 2 words, this will be a second check.
     let messageArray = message.content.split(" ");
-    let msgGuildSettings = getGuildInGuildList(exports.guildSettings, message.guild.id);
+    let msgGuildSettings = message.channel.type.toString().toLowerCase() === "dm"
+        ? getGuildInGuildList(exports.guildSettings, message.guild.id)
+        : null;
     //split the message into words
     let cmd = messageArray[0];
     let args = messageArray.slice(1);
@@ -234,9 +237,12 @@ bot.on(discord_js_1.Events.MessageCreate, async (message) => {
     //Put DM commands here
     //////////////////////
     if (message.channel.type.toString().toLowerCase() === "dm") {
+        console.log("Got DM");
         if (cmd.toLowerCase() === `${tradPrefix}addreactionresponse`) {
+            console.log("ReactionResponse DM");
             var reactionResponseJoined = args.join(' ');
             addReactionResponseToList(reactionResponseJoined);
+            return;
         }
         //Need to generalize this process for multiple servers. May move it out of DMs and into a specific channel, bu i think dms is good
         //if(cmd == "addq")
@@ -468,8 +474,10 @@ bot.on(discord_js_1.Events.MessageCreate, async (message) => {
         return;
     }
     if (cmd === `<@506144323708911617>`) {
-        var randomReactionResponse = reactionResponses[Math.floor(Math.random() * reactionResponses.length)];
-        message.reply(randomReactionResponse);
+        if (reactionResponses.length > 0) {
+            var randomReactionResponse = reactionResponses[Math.floor(Math.random() * reactionResponses.length)];
+            message.reply(randomReactionResponse);
+        }
     }
     //help
     if (cmd === `${tradPrefix}help`) {

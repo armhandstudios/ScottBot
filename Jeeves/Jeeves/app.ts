@@ -8,7 +8,7 @@
 //Discord bot
 //The end goal of this project is to create a bot to moderate a server with useful features.
 
-import { Client, GatewayIntentBits, DiscordAPIError, Emoji, Events, Guild, MessageReaction, Embed, TextChannel, BaseGuildTextChannel, BaseGuild, IntentsBitField, ColorResolvable, EmojiIdentifierResolvable } from "discord.js";
+import { Client, GatewayIntentBits, DiscordAPIError, Emoji, Events, Guild, MessageReaction, Embed, TextChannel, BaseGuildTextChannel, BaseGuild, IntentsBitField, ColorResolvable, EmojiIdentifierResolvable, Partials } from "discord.js";
 import { GuildSettings } from "./Objects/GuildSettings";
 import { VoteChannel } from "./Objects/VoteChannel";
 import { ConfigHandler } from "./MessageHandlers/ConfigHandler";
@@ -45,7 +45,8 @@ var reactionResponses: string[];
 const bot: Client = new Discord.Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildEmojisAndStickers,
         GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMessageReactions,
-        GatewayIntentBits.MessageContent]
+        GatewayIntentBits.MessageContent, GatewayIntentBits.DirectMessages],
+    partials: [Partials.Channel, Partials.Message ]
 });
 
 export var guildSettings: Array<GuildSettings> = []; 
@@ -244,7 +245,11 @@ bot.on(Events.MessageCreate, async message => {
     let casPrefix: string = botconfig.casPrefix;        //casual command prefix
     let casQualifier: string = botconfig.casQualifier   //casual command prefix is 2 words, this will be a second check.
     let messageArray = message.content.split(" ");
-    let msgGuildSettings = getGuildInGuildList(guildSettings, message.guild.id);
+
+    let msgGuildSettings = message.channel.type.toString().toLowerCase() === "dm"
+        ? getGuildInGuildList(guildSettings, message.guild.id)
+        : null;
+
 
     //split the message into words
     let cmd = messageArray[0];
@@ -259,9 +264,12 @@ bot.on(Events.MessageCreate, async message => {
     //Put DM commands here
     //////////////////////
     if (message.channel.type.toString().toLowerCase() === "dm") {
+        console.log("Got DM");
         if (cmd.toLowerCase() === `${tradPrefix}addreactionresponse`) {
+            console.log("ReactionResponse DM")
             var reactionResponseJoined: string = args.join(' ');
             addReactionResponseToList(reactionResponseJoined);
+            return;
         }
         //Need to generalize this process for multiple servers. May move it out of DMs and into a specific channel, bu i think dms is good
         //if(cmd == "addq")
@@ -387,7 +395,6 @@ bot.on(Events.MessageCreate, async message => {
         //    }
         //}
     }
-
 
     ///////////////////////////
     //Put TROINTS commands here
@@ -527,8 +534,10 @@ bot.on(Events.MessageCreate, async message => {
     }
 
     if (cmd === `<@506144323708911617>`) {
-        var randomReactionResponse: string = reactionResponses[Math.floor(Math.random() * reactionResponses.length)];
-        message.reply(randomReactionResponse);
+        if (reactionResponses.length > 0) {
+            var randomReactionResponse: string = reactionResponses[Math.floor(Math.random() * reactionResponses.length)];
+            message.reply(randomReactionResponse);
+        }
     }
 
     //help
