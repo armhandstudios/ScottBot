@@ -141,5 +141,6 @@ export class ConfigHandler extends BaseHandler {
     AddReactionResponse(args: string[], message: Message) {
         var reactionResponseJoined: string = args.join(' ');
         addReactionResponseToList(reactionResponseJoined);
+        message.reply("Successfully added message to list: " + reactionResponseJoined);
     }
 }

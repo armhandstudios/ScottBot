@@ -122,6 +122,7 @@ class ConfigHandler extends BaseHandler_1.BaseHandler {
     AddReactionResponse(args, message) {
         var reactionResponseJoined = args.join(' ');
         (0, app_1.addReactionResponseToList)(reactionResponseJoined);
+        message.reply("Successfully added message to list: " + reactionResponseJoined);
     }
 }
 exports.ConfigHandler = ConfigHandler;

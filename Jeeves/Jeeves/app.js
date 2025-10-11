@@ -242,6 +242,7 @@ bot.on(discord_js_1.Events.MessageCreate, async (message) => {
             console.log("ReactionResponse DM");
             var reactionResponseJoined = args.join(' ');
             addReactionResponseToList(reactionResponseJoined);
+            message.reply("Successfully added message to list: " + reactionResponseJoined);
             return;
         }
         //Need to generalize this process for multiple servers. May move it out of DMs and into a specific channel, bu i think dms is good
