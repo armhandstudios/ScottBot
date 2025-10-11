@@ -39,6 +39,9 @@ const Discord = require("discord.js");
 const fs = require("fs");
 const { Console } = require("console");
 
+const reactResponseFileName: string = "./reactionResponses.json";
+var reactionResponses: string[];
+
 const bot: Client = new Discord.Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildEmojisAndStickers,
         GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMessageReactions,
@@ -85,6 +88,27 @@ export function exportGuildSettings(guildSettingsList: Array<GuildSettings>) {
     var guildListJSON = JSON.stringify(guildSettingsList);
     fs.writeFile("guildSettings.json", guildListJSON, (err) => { if (err) console.log(`Error writing to guildListJSON: ${err}`) });
     logConfig("exportGuildSettings");
+}
+
+function loadReactResponses() {
+    var rawData: string;
+    if (fs.existsSync(reactResponseFileName)) {
+        rawData = fs.readFileSync(reactResponseFileName);
+        reactionResponses = JSON.parse(rawData);
+    }
+    else {
+        reactionResponses = [];
+    }
+}
+
+function saveReactResponses() {
+    var reactResponsesJson: string = JSON.stringify(reactionResponses);
+    fs.writeFile(reactResponseFileName, reactResponsesJson, (err) => { if (err) console.log(`Error writing to reaction responses file: ${err}`) });
+}
+
+export function addReactionResponseToList(newReactionResponse: string) {
+    reactionResponses.push(newReactionResponse);
+    saveReactResponses();
 }
 
 function logConfig(source: string) {
@@ -152,6 +176,7 @@ bot.on("ready", async () => {
 
     exportGuildSettings(guildSettings);
 
+    loadReactResponses();
     //need to generalize this action beyond just my server. Additionally, it should save this if it goes offline, rather than initialize it every startup.
     //var membersWithRole = bot.guilds.get("263039543048011778").members.filter(member => { return member.roles.find("name", "Trontestant")}).map(member =>
     //    {
@@ -225,12 +250,19 @@ bot.on(Events.MessageCreate, async message => {
     let cmd = messageArray[0];
     let args = messageArray.slice(1);
 
+    //DEBUG: log message
+    console.log(message.content);
+
 
 
     //////////////////////
     //Put DM commands here
     //////////////////////
     if (message.channel.type.toString().toLowerCase() === "dm") {
+        if (cmd.toLowerCase() === `${tradPrefix}addreactionresponse`) {
+            var reactionResponseJoined: string = args.join(' ');
+            addReactionResponseToList(reactionResponseJoined);
+        }
         //Need to generalize this process for multiple servers. May move it out of DMs and into a specific channel, bu i think dms is good
         //if(cmd == "addq")
         //{
@@ -494,6 +526,11 @@ bot.on(Events.MessageCreate, async message => {
         return;
     }
 
+    if (cmd === `<@506144323708911617>`) {
+        var randomReactionResponse: string = reactionResponses[Math.floor(Math.random() * reactionResponses.length)];
+        message.reply(randomReactionResponse);
+    }
+
     //help
     if (cmd === `${tradPrefix}help`) {
         console.log("Displaying Help");
@@ -523,6 +560,8 @@ bot.on(Events.MessageCreate, async message => {
                     { name: "!poll [question]", value: "Reacts to your question with a yes no and meh option for people to vote on. You can also specify custom options by placing emojis before the question, separated by spaces!" },
                     { name: "!getServerConfig", value: "Prints a json object containing the configuration for the current server. May be confusing!"},
                     { name: "!setColor", value: "Allows you to select the color of your name! Type the command for a list of colors, then type !setColor {color} (please use designated channel)."},
+                    { name: "!addReactionResponse", value: "Allows you to add a response to the list of responses Jeeves can have when you @ him"},
+                    { name: "@Jeeves", value: "When @'ed, Jeeves will respond with a randomly chosen canned response"},
                     { name: "Passive Commands", value: "This bot may also contain some passive triggers when it sees messages with certain words" },
                     { name: "For More:", value: "visit https://github.com/armhandstudios/ScottBot" }
                 );

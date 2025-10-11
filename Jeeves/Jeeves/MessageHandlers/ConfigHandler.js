@@ -27,6 +27,10 @@ class ConfigHandler extends BaseHandler_1.BaseHandler {
             this.RevertChannelsToDefault(args, message);
             return true;
         }
+        if (cmd.toLowerCase() === `${this.tradPrefix}addreactionresponse`) {
+            this.AddReactionResponse(args, message);
+            return true;
+        }
     }
     SetBotConfig(args, message) {
         if (args.length > 1) {
@@ -114,6 +118,10 @@ class ConfigHandler extends BaseHandler_1.BaseHandler {
         message.guild.channels.fetch(clippedSnowflake) //channel being saved as <#sldkfjslkj>, its looking for the slkdfjsldkfh
             .then(channel => channel.setName(defaults.defaultName, "Jeeves !revert command"))
             .catch(err => console.log(err));
+    }
+    AddReactionResponse(args, message) {
+        var reactionResponseJoined = args.join(' ');
+        (0, app_1.addReactionResponseToList)(reactionResponseJoined);
     }
 }
 exports.ConfigHandler = ConfigHandler;
