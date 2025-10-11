@@ -3,7 +3,7 @@
 
 import { BaseGuildTextChannel, Message, Snowflake, TextBasedChannel } from "discord.js";
 import { BaseHandler } from "./BaseHandler";
-import { guildSettings, exportGuildSettings } from "../app"
+import { guildSettings, exportGuildSettings, addReactionResponseToList } from "../app"
 import { VoteChannel } from "../Objects/VoteChannel";
 import { ChannelDefaults } from "../Objects/ChannelDefaults";
 
@@ -29,6 +29,11 @@ export class ConfigHandler extends BaseHandler {
         if (cmd === `${this.tradPrefix}revertChannelNames`) {
             this.RevertChannelsToDefault(args, message);
             return true;
+        }
+
+        if (cmd.toLowerCase() === `${this.tradPrefix}addreactionresponse`) {
+            this.AddReactionResponse(args, message);
+            return true
         }
             
     }
@@ -131,5 +136,10 @@ export class ConfigHandler extends BaseHandler {
         message.guild.channels.fetch(clippedSnowflake) //channel being saved as <#sldkfjslkj>, its looking for the slkdfjsldkfh
             .then(channel => (channel as BaseGuildTextChannel).setName(defaults.defaultName, "Jeeves !revert command"))
             .catch(err => console.log(err));
+    }
+
+    AddReactionResponse(args: string[], message: Message) {
+        var reactionResponseJoined: string = args.join(' ');
+        addReactionResponseToList(reactionResponseJoined);
     }
 }

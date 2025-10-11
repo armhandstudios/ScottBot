@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createColorRolesIfNotExist = exports.exportGuildSettings = exports.roleColorList = exports.guildSettings = void 0;
+exports.createColorRolesIfNotExist = exports.addReactionResponseToList = exports.exportGuildSettings = exports.roleColorList = exports.guildSettings = void 0;
 process.stdout.write("Starting Jeeves");
 /// <reference path="Objects/GuildSettings.ts" />
 /// <reference path="Objects/VoteChannel.ts" />
@@ -38,6 +38,8 @@ const botconfig = require("./botconfig.json");
 const Discord = require("discord.js");
 const fs = require("fs");
 const { Console } = require("console");
+const reactResponseFileName = "./reactionResponses.json";
+var reactionResponses;
 const bot = new Discord.Client({
     intents: [discord_js_1.GatewayIntentBits.Guilds, discord_js_1.GatewayIntentBits.GuildMembers, discord_js_1.GatewayIntentBits.GuildPresences, discord_js_1.GatewayIntentBits.GuildEmojisAndStickers,
         discord_js_1.GatewayIntentBits.GuildMessages, discord_js_1.GatewayIntentBits.GuildMessageReactions,
@@ -82,6 +84,26 @@ function exportGuildSettings(guildSettingsList) {
     logConfig("exportGuildSettings");
 }
 exports.exportGuildSettings = exportGuildSettings;
+function loadReactResponses() {
+    var rawData;
+    if (fs.existsSync(reactResponseFileName)) {
+        rawData = fs.readFileSync(reactResponseFileName);
+        reactionResponses = JSON.parse(rawData);
+    }
+    else {
+        reactionResponses = [];
+    }
+}
+function saveReactResponses() {
+    var reactResponsesJson = JSON.stringify(reactionResponses);
+    fs.writeFile(reactResponseFileName, reactResponsesJson, (err) => { if (err)
+        console.log(`Error writing to reaction responses file: ${err}`); });
+}
+function addReactionResponseToList(newReactionResponse) {
+    reactionResponses.push(newReactionResponse);
+    saveReactResponses();
+}
+exports.addReactionResponseToList = addReactionResponseToList;
 function logConfig(source) {
     console.log("Logging config from ", source);
     console.log("Guild Settings list:");
@@ -139,6 +161,7 @@ bot.on("ready", async () => {
         }
     }));
     exportGuildSettings(exports.guildSettings);
+    loadReactResponses();
     //need to generalize this action beyond just my server. Additionally, it should save this if it goes offline, rather than initialize it every startup.
     //var membersWithRole = bot.guilds.get("263039543048011778").members.filter(member => { return member.roles.find("name", "Trontestant")}).map(member =>
     //    {
@@ -205,10 +228,16 @@ bot.on(discord_js_1.Events.MessageCreate, async (message) => {
     //split the message into words
     let cmd = messageArray[0];
     let args = messageArray.slice(1);
+    //DEBUG: log message
+    console.log(message.content);
     //////////////////////
     //Put DM commands here
     //////////////////////
     if (message.channel.type.toString().toLowerCase() === "dm") {
+        if (cmd.toLowerCase() === `${tradPrefix}addreactionresponse`) {
+            var reactionResponseJoined = args.join(' ');
+            addReactionResponseToList(reactionResponseJoined);
+        }
         //Need to generalize this process for multiple servers. May move it out of DMs and into a specific channel, bu i think dms is good
         //if(cmd == "addq")
         //{
@@ -438,6 +467,10 @@ bot.on(discord_js_1.Events.MessageCreate, async (message) => {
     if (new RoleHandler_1.RoleHandler().ingest(messageArray, message)) {
         return;
     }
+    if (cmd === `<@506144323708911617>`) {
+        var randomReactionResponse = reactionResponses[Math.floor(Math.random() * reactionResponses.length)];
+        message.reply(randomReactionResponse);
+    }
     //help
     if (cmd === `${tradPrefix}help`) {
         console.log("Displaying Help");
@@ -458,7 +491,7 @@ bot.on(discord_js_1.Events.MessageCreate, async (message) => {
             let helpembed = new Discord.EmbedBuilder()
                 .setDescription("Available Commands: (This list is incomplete and incorrect)")
                 .setColor("#CC7F3A")
-                .addFields({ name: "!help", value: "Show this message" }, { name: "!setBotConfig", value: "Designates a channel as the bot config channel. This is required to get server join/leave messages" }, { name: "!setUpvote #channel [emoji]", value: "Designates a channel to be an upvote channel, where Jeeves reacts to every attachment with the specified emoji to start an upvote. Default is thumbs up" }, { name: "!setDefaultName #channel [defaultChannelName]", value: "Sets the default name of a channel to the given value. If no value is given, it will set the default channel name to its current name. To be used with !revertChannelNames" }, { name: "!revertChannelNames", value: "Reverts all channel names with a default value to their default value. See !setDefaultName" }, { name: "!poll [question]", value: "Reacts to your question with a yes no and meh option for people to vote on. You can also specify custom options by placing emojis before the question, separated by spaces!" }, { name: "!getServerConfig", value: "Prints a json object containing the configuration for the current server. May be confusing!" }, { name: "!setColor", value: "Allows you to select the color of your name! Type the command for a list of colors, then type !setColor {color} (please use designated channel)." }, { name: "Passive Commands", value: "This bot may also contain some passive triggers when it sees messages with certain words" }, { name: "For More:", value: "visit https://github.com/armhandstudios/ScottBot" });
+                .addFields({ name: "!help", value: "Show this message" }, { name: "!setBotConfig", value: "Designates a channel as the bot config channel. This is required to get server join/leave messages" }, { name: "!setUpvote #channel [emoji]", value: "Designates a channel to be an upvote channel, where Jeeves reacts to every attachment with the specified emoji to start an upvote. Default is thumbs up" }, { name: "!setDefaultName #channel [defaultChannelName]", value: "Sets the default name of a channel to the given value. If no value is given, it will set the default channel name to its current name. To be used with !revertChannelNames" }, { name: "!revertChannelNames", value: "Reverts all channel names with a default value to their default value. See !setDefaultName" }, { name: "!poll [question]", value: "Reacts to your question with a yes no and meh option for people to vote on. You can also specify custom options by placing emojis before the question, separated by spaces!" }, { name: "!getServerConfig", value: "Prints a json object containing the configuration for the current server. May be confusing!" }, { name: "!setColor", value: "Allows you to select the color of your name! Type the command for a list of colors, then type !setColor {color} (please use designated channel)." }, { name: "!addReactionResponse", value: "Allows you to add a response to the list of responses Jeeves can have when you @ him" }, { name: "@Jeeves", value: "When @'ed, Jeeves will respond with a randomly chosen canned response" }, { name: "Passive Commands", value: "This bot may also contain some passive triggers when it sees messages with certain words" }, { name: "For More:", value: "visit https://github.com/armhandstudios/ScottBot" });
             message.channel.send({ embeds: [helpembed] });
             return;
         }
