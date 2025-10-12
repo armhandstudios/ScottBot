@@ -225,9 +225,7 @@ bot.on(discord_js_1.Events.MessageCreate, async (message) => {
     let casPrefix = botconfig.casPrefix; //casual command prefix
     let casQualifier = botconfig.casQualifier; //casual command prefix is 2 words, this will be a second check.
     let messageArray = message.content.split(" ");
-    let msgGuildSettings = message.channel.type.toString().toLowerCase() === "dm"
-        ? getGuildInGuildList(exports.guildSettings, message.guild.id)
-        : null;
+    let msgGuildSettings = getGuildInGuildList(exports.guildSettings, message.guild?.id);
     //split the message into words
     let cmd = messageArray[0];
     let args = messageArray.slice(1);
