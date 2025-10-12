@@ -3,7 +3,7 @@
 
 import { BaseGuildTextChannel, Message, Snowflake, TextBasedChannel } from "discord.js";
 import { BaseHandler } from "./BaseHandler";
-import { guildSettings, exportGuildSettings, addReactionResponseToList } from "../app"
+import { guildSettings, exportGuildSettings, addReactionResponseToList, logConfig } from "../app"
 import { VoteChannel } from "../Objects/VoteChannel";
 import { ChannelDefaults } from "../Objects/ChannelDefaults";
 
@@ -33,7 +33,12 @@ export class ConfigHandler extends BaseHandler {
 
         if (cmd.toLowerCase() === `${this.tradPrefix}addreactionresponse`) {
             this.AddReactionResponse(args, message);
-            return true
+            return true;
+        }
+
+        if (cmd === `${this.tradPrefix}outConfig`) {
+            this.LogConfig(args, message);
+            return true;
         }
             
     }
@@ -59,6 +64,8 @@ export class ConfigHandler extends BaseHandler {
             console.log("Executing SetConfigChannel");
             guildSettings.find(guildSetting => guildSetting.guildId === message.guild.id)?.SetConfigChannel(configChannel);
         }
+
+        message.reply(`Set ${configChannel} as BotConfigChannel`);
         exportGuildSettings(guildSettings);
     }
 
@@ -78,6 +85,7 @@ export class ConfigHandler extends BaseHandler {
         console.log(upvoteChannel);
         guildSettings.find(guildSetting => guildSetting.guildId === message.guild.id)?.SetVoteChannel(upvoteChannel);
         exportGuildSettings(guildSettings);
+        message.reply("Set " + args[0] + " as an upvote channel with emoji " + emoji);
     }
 
     ///
@@ -92,6 +100,8 @@ export class ConfigHandler extends BaseHandler {
 
         var messageChannel: BaseGuildTextChannel;
 
+        //Confirm message was sent in a text channel
+        //TODO: Might not need this?
         try {
             messageChannel = message.channel as BaseGuildTextChannel
         }
@@ -101,21 +111,27 @@ export class ConfigHandler extends BaseHandler {
         }
 
         var defaultName: string;
+
+        //If only argument is channel, take its current name as default
         if (args.length == 1) {
             defaultName = messageChannel.name;
         }
+
+        //If name is specified, set specified name as default
         if (args.length == 2) {
             defaultName = args[1];
         }
 
+        //Create a channelDefaults object and add it to guildSettings
         var channelDefault = new ChannelDefaults(args[0], defaultName);
         guildSettings.find(guildSetting => guildSetting.guildId === message.guild.id)?.AddChannelDefault(channelDefault);
+        message.reply(`Set ${defaultName} as default channel name for ${args[0]}`);
         exportGuildSettings(guildSettings);
     }
 
     ///
     /// Currently, this will revert all channels to default
-    /// Can update it to do specific channels
+    /// TODO: Can update it to do specific channels
     ///
     RevertChannelsToDefault(args: string[], message: Message) {
         var gs = guildSettings.find(guildSetting => guildSetting.guildId === message.guild.id)
@@ -129,18 +145,32 @@ export class ConfigHandler extends BaseHandler {
         for (var i = 0; i < defaultNames.length; i++) {
             var clippedSnowflake: string = defaultNames[i].channel.slice(2, -1);
             this.ChannelNamePromise(message, clippedSnowflake, defaultNames[i]);
+
+            message.reply("Reverted channels to default names");
         }
     }
 
+    //Given a channel name, change its name to 'defaults.defaultName'
     ChannelNamePromise(message: Message, clippedSnowflake: string, defaults: ChannelDefaults) {
         message.guild.channels.fetch(clippedSnowflake) //channel being saved as <#sldkfjslkj>, its looking for the slkdfjsldkfh
             .then(channel => (channel as BaseGuildTextChannel).setName(defaults.defaultName, "Jeeves !revert command"))
             .catch(err => console.log(err));
     }
 
+    //Add a reaction response to Jeeves list of canned responses when @'ed
     AddReactionResponse(args: string[], message: Message) {
         var reactionResponseJoined: string = args.join(' ');
         addReactionResponseToList(reactionResponseJoined);
         message.reply("Successfully added message to list: " + reactionResponseJoined);
+    }
+
+    //Log Jeeves' config to console
+    LogConfig(args: string[], message: Message) {
+        if (args.length > 1) {
+            message.channel.send("I'm sorry old sport, I didn't understand that.");
+            return;
+        }
+        logConfig("outConfig command");
+
     }
 }

@@ -13,6 +13,7 @@ export class RegexHandler extends BaseHandler {
         return ret;
     }
 
+    //Functions that check if a single word or short regex exists in the message array
     checkForSingleWords(messageArray: string[], message: Message): boolean {
         let ret: boolean = false;
         //Remember: for/of gives a string, for/in gives an index
@@ -27,15 +28,17 @@ export class RegexHandler extends BaseHandler {
         return ret;
     }
 
+    //Functions that check if a combination of words or larger regexes exist in the message array
     checkForPhrases(messageArray: string[], message: Message): boolean {
         let ret: boolean = false;
-        ret = ret || this.checkForbiddenName(message);
+        //ret = ret || this.checkForbiddenName(message);
         ret = ret || this.checkTroints(message);
         ret = ret || this.checkHawkTuah(messageArray, message)
 
         return ret;
     }
 
+    //If 'stock' is in a message, post the correction '*Stonk'
     checkStock(word: string, message: Message): void {
         if (word.toLowerCase() == "stocks") {
             message.channel.send("*Stonks");
@@ -45,12 +48,14 @@ export class RegexHandler extends BaseHandler {
         }
     }
 
+    //Disapprove if the word 'Clanker' is posted
     checkClanker(word: string, message: Message): void {
         if (word.toLowerCase() == "clanker" || word.toLowerCase() == "clankers") {
             message.channel.send("You can't say that word");
         }
     }
 
+    //Do not allow smush, smultimash, or any bastardization of Smash Ultimate to be posted
     checkSmultimash(word: string, message: Message): boolean {
         if (/^sm.*u.*sh/i.test(word)) {
             console.log("Fixing smush");
@@ -62,14 +67,16 @@ export class RegexHandler extends BaseHandler {
         return false;
     }
 
+    //Do not allow Scott The Woz to be posted
     checkForbiddenName(message: Message): boolean {
         if (/s.ot.?.*w.?oz.*/i.test(message.content.toLowerCase())) {
             console.log("How dare you say that name in this server");
             message.delete().catch(O_o => { console.log("Couldn't delete?") });
-            return true;
+            return false;
         }
     }
 
+    //If user types '@everyone it's time for`, respond with the trivia troints image
     checkTroints(message: Message): boolean {
         if (/@everyone it.?s time fo+r.*/i.test(message.content.toLowerCase())) {
             console.log("troint time");
@@ -78,6 +85,7 @@ export class RegexHandler extends BaseHandler {
         }
     }
 
+    //If user types ... to a big store ..., respond with hawk tuah big store
     checkHawkTuah(messageArray: string[], message: Message): boolean {
         for (let indexStr in messageArray.slice(0, -2)) {
             var index: number = Number.parseInt(indexStr);
@@ -85,7 +93,10 @@ export class RegexHandler extends BaseHandler {
                 if (messageArray[index + 1].toLowerCase() == 'a') {
                     console.log("Hawk Tuah detected")
                     if (Math.random() > 0.9) {
-                        message.channel.send(`Hawk Tuah ${messageArray[index + 2]}`);
+                        if (messageArray.length >= index + 2)
+                            message.channel.send(`Hawk Tuah ${messageArray[index + 3]}`);
+                        else
+                            message.channel.send(`Hawk Tuah ${messageArray[index + 2]}`);
                         return true;
                     }
                 }

@@ -29,24 +29,30 @@ export class ActivityHandler extends BaseHandler {
         return ret;
     }
 
+    //Once a day, if multiple people are talking, jeeves can chime in
     heatedDebate(message: Message): boolean {
         let channel: TextChannel = message.channel as TextChannel;
 
         //Only use this command once a day at most
         var curTime: number = Date.now().valueOf() as number
         if (curTime < (ActivityHandler.lastHeatedDebate.valueOf() as number) + 86400000) {
-            //console.log(`Skipping Heated debate at ${Date.now()}`);
             return true;
         }
 
         var lastFiveMessages: Message[] = channel.messages.cache.last(5);
         console.log`Last Five - ${lastFiveMessages}`;
 
+        //Channel must be at least 5 messages old
         if (lastFiveMessages.length < 5) {
             return true;
         }
 
-        if ((lastFiveMessages[0].createdAt.valueOf() as number) > (lastFiveMessages[4].createdAt.valueOf() as number) - 30000) {
+        //Count the number of unique chatters among the last five messages
+        var uniqueAuthors = new Set(lastFiveMessages.map(msg => msg.author))
+
+        //If the last five messages took place within 30 seconds and include at least 3 people
+        if ((lastFiveMessages[0].createdAt.valueOf() as number) > (lastFiveMessages[4].createdAt.valueOf() as number) - 30000
+                && uniqueAuthors.size >= 3) {
 
             switch (Math.floor(Math.random() * 5)) {
                 case 0:
