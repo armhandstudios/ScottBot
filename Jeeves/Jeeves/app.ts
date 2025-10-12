@@ -246,9 +246,7 @@ bot.on(Events.MessageCreate, async message => {
     let casQualifier: string = botconfig.casQualifier   //casual command prefix is 2 words, this will be a second check.
     let messageArray = message.content.split(" ");
 
-    let msgGuildSettings = message.channel.type.toString().toLowerCase() === "dm"
-        ? getGuildInGuildList(guildSettings, message.guild.id)
-        : null;
+    let msgGuildSettings = getGuildInGuildList(guildSettings, message.guild?.id);
 
 
     //split the message into words

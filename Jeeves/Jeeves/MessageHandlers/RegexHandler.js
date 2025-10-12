@@ -16,6 +16,7 @@ class RegexHandler extends BaseHandler_1.BaseHandler {
         //Remember: for/of gives a string, for/in gives an index
         for (let word of messageArray) {
             this.checkStock(word, message);
+            this.checkClanker(word, message);
             if (botconfig.deleteSmush) {
                 ret = ret || this.checkSmultimash(word, message);
             }
@@ -35,6 +36,11 @@ class RegexHandler extends BaseHandler_1.BaseHandler {
         }
         if (word.toLowerCase() == "stock") {
             message.channel.send("*Stonk");
+        }
+    }
+    checkClanker(word, message) {
+        if (word.toLowerCase() == "clanker" || word.toLowerCase() == "clankers") {
+            message.channel.send("You can't say that word");
         }
     }
     checkSmultimash(word, message) {
