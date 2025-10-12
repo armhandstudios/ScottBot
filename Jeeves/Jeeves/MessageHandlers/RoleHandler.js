@@ -18,16 +18,21 @@ class RoleHandler extends BaseHandler_1.BaseHandler {
             return true;
         }
     }
+    //!SetColor [color]
+    //If a valid color is given, user is given role 'jeeves_[color], which should be configured as the only roles with colors in the server
+    //Other jeeves_[color] roles will be removed so user only ever has one
     SetColor(args, message) {
         if (args.length > 1) {
             message.channel.send("I'm sorry old sport, I didn't understand that.");
             return;
         }
+        //If no args are given, or arg is not a valid color, post list of valid colors
         if (args.length < 1
             || message.guild.roles.cache.find(role => role.name == `jeeves_${args[0]}`) == undefined) {
             message.channel.send(`Please say which color you want to be from the following (mind your caps) - ${app_1.roleColorList.toString()}`);
             return;
         }
+        //Remove all other color roles
         var colorRoleIter;
         for (var color of app_1.roleColorList) {
             if (color != args[0]) {
@@ -35,10 +40,11 @@ class RoleHandler extends BaseHandler_1.BaseHandler {
                 message.member.roles.remove(colorRoleIter).catch(_ => null);
             }
         }
+        //Add requested role to user
         message.member.roles.add(message.guild.roles.cache.find(role => role.name == `jeeves_${args[0]}`));
     }
     SetUpColorRoles(message) {
-        //Default all the other roles
+        //Set all non jeeves_[color] roles to have Default color
         message.guild.roles.cache.forEach(role => {
             if (!role.name.includes('jeeves_')) {
                 role.setColor('Default').catch(_ => null);

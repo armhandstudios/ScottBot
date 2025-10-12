@@ -20,20 +20,25 @@ class ActivityHandler extends BaseHandler_1.BaseHandler {
         ret = ret || this.heatedDebate(message);
         return ret;
     }
+    //Once a day, if multiple people are talking, jeeves can chime in
     heatedDebate(message) {
         let channel = message.channel;
         //Only use this command once a day at most
         var curTime = Date.now().valueOf();
         if (curTime < ActivityHandler.lastHeatedDebate.valueOf() + 86400000) {
-            //console.log(`Skipping Heated debate at ${Date.now()}`);
             return true;
         }
         var lastFiveMessages = channel.messages.cache.last(5);
         console.log `Last Five - ${lastFiveMessages}`;
+        //Channel must be at least 5 messages old
         if (lastFiveMessages.length < 5) {
             return true;
         }
-        if (lastFiveMessages[0].createdAt.valueOf() > lastFiveMessages[4].createdAt.valueOf() - 30000) {
+        //Count the number of unique chatters among the last five messages
+        var uniqueAuthors = new Set(lastFiveMessages.map(msg => msg.author));
+        //If the last five messages took place within 30 seconds and include at least 3 people
+        if (lastFiveMessages[0].createdAt.valueOf() > lastFiveMessages[4].createdAt.valueOf() - 30000
+            && uniqueAuthors.size >= 3) {
             switch (Math.floor(Math.random() * 5)) {
                 case 0:
                     channel.send("Mom, Dad, stop fighting");
