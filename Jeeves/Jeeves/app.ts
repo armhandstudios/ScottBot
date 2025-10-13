@@ -5,6 +5,13 @@
 /// <reference path="ConfigHandlers/ConfigHandler.ts" />
 
 
+//TODO
+//Remove Vote Channel
+//Clear Vote Channels
+//Remove BotConfig channel
+//Get Random Pinned Message?
+//Pause/Resume master commands to freeze chats
+
 
 import { Client, GatewayIntentBits, DiscordAPIError, Emoji, Events, Guild, MessageReaction, Embed, TextChannel, BaseGuildTextChannel, BaseGuild, IntentsBitField, ColorResolvable, EmojiIdentifierResolvable, Partials } from "discord.js";
 import { GuildSettings } from "./Objects/GuildSettings";
@@ -104,6 +111,15 @@ export function addReactionResponseToList(newReactionResponse: string) {
     reactionResponses.push(newReactionResponse);
     saveReactResponses();
 }
+
+
+//export function GetGuild() {
+//    return new Guild.
+//    }
+
+//export function GetChannelByName(guildId: string, channelName: string) {
+//    return
+//}
 
 //Log bot config to console
 export function logConfig(source: string) {
@@ -451,7 +467,7 @@ bot.on(Events.MessageCreate, async message => {
     }
 
     //Get settings for the guild this message was posted in
-    if (cmd == `${tradPrefix}getServerConfig`) {
+    if (cmd.toLowerCase() == `${tradPrefix}getserverconfig`) {
         console.log(`"Printing server config for ${message.guild.id}`);
         message.channel.send(JSON.stringify(msgGuildSettings));
         return;
@@ -460,7 +476,7 @@ bot.on(Events.MessageCreate, async message => {
     //addrole [name] [color]
     //fuuuuuuuck ok theres error handling but these trash methods don't seem to throw errors
     //so invalid colors will just default
-    if (cmd === `${tradPrefix}addrole`) {
+    if (cmd.toLowerCase() === `${tradPrefix}addrole`) {
         var roleColor: string;
         //check how many args there are
         if (args.length === 0) {
@@ -496,7 +512,7 @@ bot.on(Events.MessageCreate, async message => {
     //poll
     //Reacts to a command with a thumbs up and thumbs down
     //TODO: Crashes if bot has permission to view a channel, but not permission to react in a channel
-    if (cmd === `${tradPrefix}poll`) {
+    if (cmd.toLowerCase() === `${tradPrefix}poll`) {
         let reactionsList: (string|EmojiIdentifierResolvable)[] = [];
         for (let reaction of args) {
             console.log("Parsing args for reactions; found ", reaction);
