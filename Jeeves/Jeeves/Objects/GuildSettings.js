@@ -35,19 +35,31 @@ class GuildSettings {
         this.VoteChannels.push(voteChannel);
         console.log(`leaving setvotechannel`);
     }
-    channelDefaultsContains(channelDefault) {
+    ClearVoteChannel(channel) {
+        this.VoteChannels = this.VoteChannels.filter(vc => vc.channel != channel);
+    }
+    //Retrieve channel defaults from guild
+    GetChannelDefaults(channelDefault) {
         for (var dcn of this.defaultChannelNames) {
             if (channelDefault.channel === dcn.channel) {
-                return true;
+                return dcn;
             }
         }
-        return false;
+        return null;
     }
+    //Update existing channel default, or add a new one
     AddChannelDefault(channelDefault) {
-        if (!this.channelDefaultsContains(channelDefault)) {
+        var existingDefaults = this.GetChannelDefaults(channelDefault);
+        if (existingDefaults == null) {
             this.defaultChannelNames.push(channelDefault);
         }
+        else
+            existingDefaults = channelDefault;
     }
+    RemoveChannelDefault(channelName) {
+        this.defaultChannelNames = this.defaultChannelNames.filter(x => x.channel != channelName);
+    }
+    //Designate configChannel as the bot config channel
     SetConfigChannel(configChannel) {
         this.botConfigChannel = configChannel;
     }

@@ -7,13 +7,13 @@ const app_1 = require("../app");
 class RoleHandler extends BaseHandler_1.BaseHandler {
     //return true if no further parsing needs to be done on message (in this case, if the message is deleted)
     ingest(messageArray, message) {
-        let cmd = messageArray[0];
+        let cmd = messageArray[0].toLowerCase();
         let args = messageArray.slice(1);
-        if (cmd === `${this.tradPrefix}setColor`) {
+        if (cmd === `${this.tradPrefix}setcolor`) {
             this.SetColor(args, message);
             return true;
         }
-        if (cmd === `${this.tradPrefix}setUpColorRoles`) {
+        if (cmd === `${this.tradPrefix}setupcolorroles`) {
             this.SetUpColorRoles(message);
             return true;
         }

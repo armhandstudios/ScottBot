@@ -1,7 +1,7 @@
 /// <reference path="VoteChannel.ts" />
 import { ChannelDefaults } from "./ChannelDefaults";
 import { VoteChannel } from "./VoteChannel";
-import { BaseGuildTextChannel, TextChannel, BaseChannel } from "discord.js";
+import { BaseGuildTextChannel, TextChannel, BaseChannel, Guild } from "discord.js";
 
 export class GuildSettings {
     guildId: string;
@@ -46,21 +46,35 @@ export class GuildSettings {
         console.log(`leaving setvotechannel`);
     }
 
-    channelDefaultsContains(channelDefault: ChannelDefaults): boolean {
+
+    ClearVoteChannel(channel: String) {
+        this.VoteChannels = this.VoteChannels.filter(vc => vc.channel != channel)
+    }
+
+    //Retrieve channel defaults from guild
+    GetChannelDefaults(channelDefault: ChannelDefaults): ChannelDefaults {
         for (var dcn of this.defaultChannelNames) {
             if (channelDefault.channel === dcn.channel) {
-                return true;
+                return dcn;
             }
         }
-        return false;
+        return null;
     }
 
+    //Update existing channel default, or add a new one
     AddChannelDefault(channelDefault: ChannelDefaults) {
-        if (!this.channelDefaultsContains(channelDefault)) {
+        var existingDefaults = this.GetChannelDefaults(channelDefault);
+        if (existingDefaults == null) {
             this.defaultChannelNames.push(channelDefault)
         }
+        else existingDefaults = channelDefault;
     }
 
+    RemoveChannelDefault(channelName: string) {
+        this.defaultChannelNames = this.defaultChannelNames.filter(x => x.channel != channelName);
+    }
+
+    //Designate configChannel as the bot config channel
     SetConfigChannel(configChannel) {
         this.botConfigChannel = configChannel;
     }

@@ -8,6 +8,12 @@ process.stdout.write("Starting Jeeves");
 /// <reference path="Objects/GuildSettings.ts" />
 /// <reference path="Objects/VoteChannel.ts" />
 /// <reference path="ConfigHandlers/ConfigHandler.ts" />
+//TODO
+//Remove Vote Channel
+//Clear Vote Channels
+//Remove BotConfig channel
+//Get Random Pinned Message?
+//Pause/Resume master commands to freeze chats
 const discord_js_1 = require("discord.js");
 const GuildSettings_1 = require("./Objects/GuildSettings");
 const VoteChannel_1 = require("./Objects/VoteChannel");
@@ -99,6 +105,12 @@ function addReactionResponseToList(newReactionResponse) {
     saveReactResponses();
 }
 exports.addReactionResponseToList = addReactionResponseToList;
+//export function GetGuild() {
+//    return new Guild.
+//    }
+//export function GetChannelByName(guildId: string, channelName: string) {
+//    return
+//}
 //Log bot config to console
 function logConfig(source) {
     console.log("Logging config from ", source);
@@ -384,7 +396,7 @@ bot.on(discord_js_1.Events.MessageCreate, async (message) => {
         }
     }
     //Get settings for the guild this message was posted in
-    if (cmd == `${tradPrefix}getServerConfig`) {
+    if (cmd.toLowerCase() == `${tradPrefix}getserverconfig`) {
         console.log(`"Printing server config for ${message.guild.id}`);
         message.channel.send(JSON.stringify(msgGuildSettings));
         return;
@@ -392,7 +404,7 @@ bot.on(discord_js_1.Events.MessageCreate, async (message) => {
     //addrole [name] [color]
     //fuuuuuuuck ok theres error handling but these trash methods don't seem to throw errors
     //so invalid colors will just default
-    if (cmd === `${tradPrefix}addrole`) {
+    if (cmd.toLowerCase() === `${tradPrefix}addrole`) {
         var roleColor;
         //check how many args there are
         if (args.length === 0) {
@@ -424,7 +436,7 @@ bot.on(discord_js_1.Events.MessageCreate, async (message) => {
     //poll
     //Reacts to a command with a thumbs up and thumbs down
     //TODO: Crashes if bot has permission to view a channel, but not permission to react in a channel
-    if (cmd === `${tradPrefix}poll`) {
+    if (cmd.toLowerCase() === `${tradPrefix}poll`) {
         let reactionsList = [];
         for (let reaction of args) {
             console.log("Parsing args for reactions; found ", reaction);

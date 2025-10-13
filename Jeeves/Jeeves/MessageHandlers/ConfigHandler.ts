@@ -9,34 +9,44 @@ import { ChannelDefaults } from "../Objects/ChannelDefaults";
 
 export class ConfigHandler extends BaseHandler {
     ingest(messageArray: string[], message: Message): boolean {
-        let cmd = messageArray[0];
+        let cmd = messageArray[0].toLowerCase();
         let args = messageArray.slice(1);
-        if (cmd === `${this.tradPrefix}setBotConfig`) {
+        if (cmd === `${this.tradPrefix}setbotconfig`) {
             this.SetBotConfig(args, message);
             return true;
         }
 
-        if (cmd === `${this.tradPrefix}setUpvote`) {
+        if (cmd === `${this.tradPrefix}setupvote`) {
             this.SetUpvote(args, message);
             return true;
         }
 
-        if (cmd === `${this.tradPrefix}setDefaultName`) {
+        if (cmd === `${this.tradPrefix}clearupvote`) {
+            this.ClearUpvote(args, message);
+            return true;
+        }
+
+        if (cmd === `${this.tradPrefix}setdefaultname`) {
             this.SetChannelDefault(args, message);
             return true;
         }
 
-        if (cmd === `${this.tradPrefix}revertChannelNames`) {
+        if (cmd === `${this.tradPrefix}removedefaultname`) {
+            this.RemoveChannelDefault(args, message);
+            return true;
+        }
+
+        if (cmd === `${this.tradPrefix}revertchannelnames`) {
             this.RevertChannelsToDefault(args, message);
             return true;
         }
 
-        if (cmd.toLowerCase() === `${this.tradPrefix}addreactionresponse`) {
+        if (cmd === `${this.tradPrefix}addreactionresponse`) {
             this.AddReactionResponse(args, message);
             return true;
         }
 
-        if (cmd === `${this.tradPrefix}outConfig`) {
+        if (cmd === `${this.tradPrefix}outconfig`) {
             this.LogConfig(args, message);
             return true;
         }
@@ -88,6 +98,14 @@ export class ConfigHandler extends BaseHandler {
         message.reply("Set " + args[0] + " as an upvote channel with emoji " + emoji);
     }
 
+    ClearUpvote(args: string[], message: Message) {
+        if (args.length != 1) {
+            message.channel.send("I'm sorry old sport, I didn't understand that.");
+        }
+        guildSettings.find(guildSetting => guildSetting.guildId === message.guild.id)?.ClearVoteChannel(args[0]);
+        message.reply("Removed all upvote configurations from channel " + args[0]);
+    }
+
     ///
     /// !setDefault #channel: Sets the current name of the channel as its default
     /// !setDefault #channel [name]: Sets the default name of the channel to [name]
@@ -113,6 +131,7 @@ export class ConfigHandler extends BaseHandler {
         var defaultName: string;
 
         //If only argument is channel, take its current name as default
+        //Bug: Sets message channel's name, not channel's current name
         if (args.length == 1) {
             defaultName = messageChannel.name;
         }
@@ -127,6 +146,15 @@ export class ConfigHandler extends BaseHandler {
         guildSettings.find(guildSetting => guildSetting.guildId === message.guild.id)?.AddChannelDefault(channelDefault);
         message.reply(`Set ${defaultName} as default channel name for ${args[0]}`);
         exportGuildSettings(guildSettings);
+    }
+
+    RemoveChannelDefault(args: string[], message: Message) {
+        if (args.length != 1) {
+            message.channel.send("Well chop my salad and scramble my eggs, I don't know how to parse that message.");
+        }
+
+        guildSettings.find(guildSetting => guildSetting.guildId === message.guild.id)?.RemoveChannelDefault(args[0]);
+        message.reply(`Removed default for channel ${args[0]}`);
     }
 
     ///
