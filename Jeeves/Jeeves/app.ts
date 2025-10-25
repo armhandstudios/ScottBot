@@ -113,7 +113,16 @@ export function addReactionResponseToList(newReactionResponse: string) {
 }
 
 function csvStringToArray(csvString: string): string[][] {
-    return csvString.split('\n').map(row => row.split(','));
+    return csvString.split('\n').map(row => row.trim().split(','));
+}
+
+function loadWords(): string[] {
+    var rawData: string;
+    if (fs.existsSync("words_alpha.txt")) {
+        rawData = fs.readFileSync("words_alpha.txt", 'utf8');
+        return csvStringToArray(rawData).map(x => x[0]);
+    }
+    return [];
 }
 
 //export function GetGuild() {
@@ -234,7 +243,7 @@ bot.on(Events.MessageCreate, async message => {
 
 
     //split the message into command and arguments
-    let cmd = messageArray[0];
+    let cmd = messageArray[0].toLowerCase();
     let args = messageArray.slice(1);
 
     //DEBUG: log message
@@ -433,14 +442,36 @@ bot.on(Events.MessageCreate, async message => {
 
     //Generate a random word(s)
     if (cmd === `${tradPrefix}word`) {
-        var rawData: string;
-        if (fs.existsSync("words_alpha.txt")) {
-            rawData = fs.readFileSync("words_alpha.txt", 'utf8');
-            var wordsArray: string[] = csvStringToArray(rawData).map(x => x[0]);
-            var wordsLength = wordsArray.length;
+        var response: string = "";
+        var numberOfWords: number = 1;
+
+        var wordsArray: string[] = loadWords();
+        var wordsLength = wordsArray.length;
+
+        if (args.length === 1 && !isNaN(Number(args[0]))) {
+            numberOfWords = Math.floor(Number(args[0]))
+        }
+
+        for (let i = 0; i < numberOfWords; i++) {
             var randomNumber = Math.floor(Math.random() * wordsLength)
             var randomWord = wordsArray[randomNumber];
-            message.reply(randomWord);
+
+            //trim newline from word
+            response = `${response} ${randomWord}`;
+        }
+        message.reply(response);
+    }
+    
+    if (cmd === `${tradPrefix}isword`) {
+        if (args.length != 1) {
+            message.channel.send("I'm sorry old sport, I didn't understand that.");
+        }
+        var wordsArray = loadWords();
+        if (wordsArray.includes(`${args[0]}`)) {
+            message.reply(`${args[0]} IS a word`)
+        }
+        else {
+            message.reply(`${args[0]} IS NOT a word`)
         }
     }
 
