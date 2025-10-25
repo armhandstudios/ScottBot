@@ -46,6 +46,10 @@ export class GuildSettings {
         console.log(`leaving setvotechannel`);
     }
 
+    //TODO: Implement
+    RemoveVoteChannel(voteChannel: VoteChannel) {
+
+    }
 
     ClearVoteChannel(channel: String) {
         this.VoteChannels = this.VoteChannels.filter(vc => vc.channel != channel)

@@ -105,6 +105,9 @@ function addReactionResponseToList(newReactionResponse) {
     saveReactResponses();
 }
 exports.addReactionResponseToList = addReactionResponseToList;
+function csvStringToArray(csvString) {
+    return csvString.split('\n').map(row => row.split(','));
+}
 //export function GetGuild() {
 //    return new Guild.
 //    }
@@ -373,6 +376,18 @@ bot.on(discord_js_1.Events.MessageCreate, async (message) => {
             message.reply(randomReactionResponse);
         }
     }
+    //Generate a random word(s)
+    if (cmd === `${tradPrefix}word`) {
+        var rawData;
+        if (fs.existsSync("words_alpha.txt")) {
+            rawData = fs.readFileSync("words_alpha.txt", 'utf8');
+            var wordsArray = csvStringToArray(rawData).map(x => x[0]);
+            var wordsLength = wordsArray.length;
+            var randomNumber = Math.floor(Math.random() * wordsLength);
+            var randomWord = wordsArray[randomNumber];
+            message.reply(randomWord);
+        }
+    }
     //help
     if (cmd === `${tradPrefix}help`) {
         console.log("Displaying Help");
@@ -390,7 +405,7 @@ bot.on(discord_js_1.Events.MessageCreate, async (message) => {
             let helpembed = new Discord.EmbedBuilder()
                 .setDescription("Available Commands: (This list is incomplete and incorrect)")
                 .setColor("#CC7F3A")
-                .addFields({ name: "!help", value: "Show this message" }, { name: "!setBotConfig", value: "Designates a channel as the bot config channel. This is required to get server join/leave messages" }, { name: "!setUpvote #channel [emoji]", value: "Designates a channel to be an upvote channel, where Jeeves reacts to every attachment with the specified emoji to start an upvote. Default is thumbs up" }, { name: "!setDefaultName #channel [defaultChannelName]", value: "Sets the default name of a channel to the given value. If no value is given, it will set the default channel name to its current name. To be used with !revertChannelNames" }, { name: "!revertChannelNames", value: "Reverts all channel names with a default value to their default value. See !setDefaultName" }, { name: "!poll [question]", value: "Reacts to your question with a yes no and meh option for people to vote on. You can also specify custom options by placing emojis before the question, separated by spaces!" }, { name: "!getServerConfig", value: "Prints a json object containing the configuration for the current server. May be confusing!" }, { name: "!setColor", value: "Allows you to select the color of your name! Type the command for a list of colors, then type !setColor {color} (please use designated channel)." }, { name: "!addReactionResponse", value: "Allows you to add a response to the list of responses Jeeves can have when you @ him" }, { name: "@Jeeves", value: "When @'ed, Jeeves will respond with a randomly chosen canned response" }, { name: "Passive Commands", value: "This bot may also contain some passive triggers when it sees messages with certain words" }, { name: "For More:", value: "visit https://github.com/armhandstudios/ScottBot" });
+                .addFields({ name: "!help", value: "Show this message" }, { name: "!setBotConfig", value: "Designates a channel as the bot config channel. This is required to get server join/leave messages" }, { name: "!setUpvote #channel [emoji]", value: "Designates a channel to be an upvote channel, where Jeeves reacts to every attachment with the specified emoji to start an upvote. Default is thumbs up" }, { name: "!setDefaultName #channel [defaultChannelName]", value: "Sets the default name of a channel to the given value. If no value is given, it will set the default channel name to its current name. To be used with !revertChannelNames" }, { name: "!revertChannelNames", value: "Reverts all channel names with a default value to their default value. See !setDefaultName" }, { name: "!poll [question]", value: "Reacts to your question with a yes no and meh option for people to vote on. You can also specify custom options by placing emojis before the question, separated by spaces!" }, { name: "!getServerConfig", value: "Prints a json object containing the configuration for the current server. May be confusing!" }, { name: "!setColor", value: "Allows you to select the color of your name! Type the command for a list of colors, then type !setColor {color} (please use designated channel)." }, { name: "!addReactionResponse", value: "Allows you to add a response to the list of responses Jeeves can have when you @ him" }, { name: "@Jeeves", value: "When @'ed, Jeeves will respond with a randomly chosen canned response" }, { name: "!word", value: "Jeeves will respond with a random word, pulled from every english word" }, { name: "Passive Commands", value: "This bot may also contain some passive triggers when it sees messages with certain words" }, { name: "For More:", value: "visit https://github.com/armhandstudios/Jeeves" });
             message.channel.send({ embeds: [helpembed] });
             return;
         }
