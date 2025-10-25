@@ -48,7 +48,7 @@ export class GuildSettings {
 
     //TODO: Implement
     RemoveVoteChannel(voteChannel: VoteChannel) {
-
+        this.VoteChannels = this.VoteChannels.filter(vc => (vc.channel != voteChannel.channel || vc.emoji != voteChannel.emoji)
     }
 
     ClearVoteChannel(channel: String) {
