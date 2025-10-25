@@ -35,6 +35,9 @@ class GuildSettings {
         this.VoteChannels.push(voteChannel);
         console.log(`leaving setvotechannel`);
     }
+    //TODO: Implement
+    RemoveVoteChannel(voteChannel) {
+    }
     ClearVoteChannel(channel) {
         this.VoteChannels = this.VoteChannels.filter(vc => vc.channel != channel);
     }

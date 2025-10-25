@@ -98,6 +98,15 @@ export class ConfigHandler extends BaseHandler {
         message.reply("Set " + args[0] + " as an upvote channel with emoji " + emoji);
     }
 
+    RemoveUpvote(args: string[], message: Message) {
+        if (args.length != 2) {
+            message.channel.send("I'm sorry old sport, I didn't understand that.");
+        }
+        var upvoteChannel = new VoteChannel(args[0], args[1]);
+        guildSettings.find(guildSetting => guildSetting.guildId === message.guild.id)?.RemoveVoteChannel(upvoteChannel);
+        message.reply("Removed " + args[1] + " upvote configuration from channel " + args[0]);
+    }
+
     ClearUpvote(args: string[], message: Message) {
         if (args.length != 1) {
             message.channel.send("I'm sorry old sport, I didn't understand that.");

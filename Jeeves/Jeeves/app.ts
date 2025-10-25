@@ -112,6 +112,9 @@ export function addReactionResponseToList(newReactionResponse: string) {
     saveReactResponses();
 }
 
+function csvStringToArray(csvString: string): string[][] {
+    return csvString.split('\n').map(row => row.split(','));
+}
 
 //export function GetGuild() {
 //    return new Guild.
@@ -428,6 +431,19 @@ bot.on(Events.MessageCreate, async message => {
         }
     }
 
+    //Generate a random word(s)
+    if (cmd === `${tradPrefix}word`) {
+        var rawData: string;
+        if (fs.existsSync("words_alpha.txt")) {
+            rawData = fs.readFileSync("words_alpha.txt", 'utf8');
+            var wordsArray: string[] = csvStringToArray(rawData).map(x => x[0]);
+            var wordsLength = wordsArray.length;
+            var randomNumber = Math.floor(Math.random() * wordsLength)
+            var randomWord = wordsArray[randomNumber];
+            message.reply(randomWord);
+        }
+    }
+
     //help
     if (cmd === `${tradPrefix}help`) {
         console.log("Displaying Help");
@@ -457,8 +473,9 @@ bot.on(Events.MessageCreate, async message => {
                     { name: "!setColor", value: "Allows you to select the color of your name! Type the command for a list of colors, then type !setColor {color} (please use designated channel)."},
                     { name: "!addReactionResponse", value: "Allows you to add a response to the list of responses Jeeves can have when you @ him"},
                     { name: "@Jeeves", value: "When @'ed, Jeeves will respond with a randomly chosen canned response"},
+                    { name: "!word", value: "Jeeves will respond with a random word, pulled from every english word"},
                     { name: "Passive Commands", value: "This bot may also contain some passive triggers when it sees messages with certain words" },
-                    { name: "For More:", value: "visit https://github.com/armhandstudios/ScottBot" }
+                    { name: "For More:", value: "visit https://github.com/armhandstudios/Jeeves" }
                 );
 
             message.channel.send({ embeds: [helpembed] });

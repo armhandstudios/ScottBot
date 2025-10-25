@@ -85,6 +85,14 @@ class ConfigHandler extends BaseHandler_1.BaseHandler {
         (0, app_1.exportGuildSettings)(app_1.guildSettings);
         message.reply("Set " + args[0] + " as an upvote channel with emoji " + emoji);
     }
+    RemoveUpvote(args, message) {
+        if (args.length != 2) {
+            message.channel.send("I'm sorry old sport, I didn't understand that.");
+        }
+        var upvoteChannel = new VoteChannel_1.VoteChannel(args[0], args[1]);
+        app_1.guildSettings.find(guildSetting => guildSetting.guildId === message.guild.id)?.RemoveVoteChannel(upvoteChannel);
+        message.reply("Removed " + args[1] + " upvote configuration from channel " + args[0]);
+    }
     ClearUpvote(args, message) {
         if (args.length != 1) {
             message.channel.send("I'm sorry old sport, I didn't understand that.");
