@@ -94,7 +94,7 @@ export class RegexHandler extends BaseHandler {
                     console.log("Hawk Tuah detected")
                     if (Math.random() > 0.9) {
                         if (messageArray.length >= index + 2)
-                            message.channel.send(`Hawk Tuah ${messageArray[index + 3]}`);
+                            message.channel.send(`Hawk Tuah ${messageArray[index + 2]} ${messageArray[index + 3]}`);
                         else
                             message.channel.send(`Hawk Tuah ${messageArray[index + 2]}`);
                         return true;
